@@ -41,15 +41,30 @@
         const { useState, useEffect } = React;
 
         const INITIAL_WORDS = [
-            "Gran Dorado '96", "El Campello", "Split", "Krakau", "Lissabon",
-            "Resort Arcen", "Texel", "Ameland", "Berlijn", "Huis van Ronald",
-            "Greg", "Tinka", "Nathalie", "Richard", "Nancy", "Remco", "Ronald", "Petra",
-            "Maltipoo JJ", "Zoetermeer", "Oosterheem", "Salesforce", "HEAO Audit",
-            "Lotus 1-2-3", "3.5 inch Diskette", "Guldens", "Friends Theme", "Peterson Tuner",
-            "Cali76 Compressor", "HX Stomp XL", "Boss OC-2", "Bass Synth MB301", "Fender Jazz Bass",
-            "Overkapping", "Sproeibeurt", "Home Assistant", "Tesla Model Y", "Borreluur",
-            "Reünie 30 Jaar", "Pubquiz", "VHS Band", "Brugjaar VWO", "HMC Rotterdam",
-            "Landal Lommerbergen", "Designer Outlet", "Public Sector", "DICTU", "Car Allowance"
+            "Ameland",
+            "Berlijn",
+            "Voorborrelen",
+            "El Campello",
+            "Gran Dorado",
+            "Greg",
+            "Gulden",
+            "HEAO",
+            "Krakau",
+            "Lommerbergen",
+            "Lissabon",
+            "Nancy",
+            "Nathalie",
+            "Oosterheem",
+            "Petra",
+            "Remco",
+            "Resort Arcen",
+            "Richard",
+            "Ronald",
+            "Split",
+            "Sproeipoes",
+            "Texel",
+            "Tinka",
+            "Zoetermeer"
         ];
 
         const INITIAL_TEAMS = [
@@ -256,16 +271,14 @@
                             onClick={handleSplashClick} 
                             class={`fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-between p-8 text-center select-none cursor-pointer ${splashFading ? 'fade-out' : ''}`}
                         >
-                            <div class="w-full"></div> {/* Spacer bovenaan */}
+                            <div class="w-full"></div>
 
                             <div class="flex flex-col items-center justify-center">
                                 {/* Logo Graphic */}
                                 <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
-                                    {/* Blauwe en Gele Kaarten */}
                                     <div class="absolute w-28 h-36 bg-sky-400 rounded-xl transform -rotate-12 translate-x-[-15px] translate-y-[-5px] shadow-2xl border-2 border-sky-300"></div>
                                     <div class="absolute w-28 h-36 bg-amber-400 rounded-xl transform rotate-6 translate-x-[15px] translate-y-[-10px] shadow-2xl border-2 border-amber-300"></div>
                                     
-                                    {/* Ogen en Lach Emoticon */}
                                     <div class="absolute z-10 flex flex-col items-center justify-center pt-2">
                                         <div class="flex space-x-6 mb-3">
                                             <div class="w-8 h-2 bg-slate-950 rounded-full transform rotate-12"></div>
