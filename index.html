@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>30 Seconds - HEAO-30 Jaar Editie</title>
+    <title>30 Seconds - HEAO '96 Edition</title>
     
     <!-- PWA / Standalone App meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,7 +25,7 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
         
         .fade-out {
-            animation: fadeOut 0.5s ease-in-out forwards;
+            animation: fadeOut 0.4s ease-in-out forwards;
         }
         @keyframes fadeOut {
             from { opacity: 1; visibility: visible; }
@@ -91,14 +91,12 @@
             const [usedWords, setUsedWords] = useState([]);
             const [roundScore, setRoundScore] = useState(0);
 
-            // Splash Screen Timer (2 seconden)
-            useEffect(() => {
-                const timer = setTimeout(() => {
-                    setSplashFading(true);
-                    setTimeout(() => setShowSplash(false), 500); // Wacht op fade-out animatie
-                }, 2000);
-                return () => clearTimeout(timer);
-            }, []);
+            // Tik-om-verder te gaan op het Splash Screen
+            const handleSplashClick = () => {
+                if (splashFading) return;
+                setSplashFading(true);
+                setTimeout(() => setShowSplash(false), 400);
+            };
 
             const playBeep = (freq = 440, type = 'sine', duration = 0.1) => {
                 try {
@@ -252,37 +250,49 @@
             return (
                 <div class="relative max-w-md mx-auto w-full h-full flex flex-col p-4 justify-between bg-slate-900">
                     
-                    {/* SPLASH SCREEN COMPONENT */}
+                    {/* SPLASH SCREEN (TIK OM VERDER TE GAAN) */}
                     {showSplash && (
-                        <div class={`fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 text-center select-none ${splashFading ? 'fade-out' : ''}`}>
-                            {/* Logo Graphic */}
-                            <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
-                                {/* Blauwe en Gele Kaarten */}
-                                <div class="absolute w-28 h-36 bg-sky-400 rounded-xl transform -rotate-12 translate-x-[-15px] translate-y-[-5px] shadow-2xl border-2 border-sky-300"></div>
-                                <div class="absolute w-28 h-36 bg-amber-400 rounded-xl transform rotate-6 translate-x-[15px] translate-y-[-10px] shadow-2xl border-2 border-amber-300"></div>
-                                
-                                {/* Ogen en Lach Emoticon */}
-                                <div class="absolute z-10 flex flex-col items-center justify-center pt-2">
-                                    <div class="flex space-x-6 mb-3">
-                                        <div class="w-8 h-2 bg-slate-950 rounded-full transform rotate-12"></div>
-                                        <div class="w-8 h-2 bg-slate-950 rounded-full transform -rotate-12"></div>
+                        <div 
+                            onClick={handleSplashClick} 
+                            class={`fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-between p-8 text-center select-none cursor-pointer ${splashFading ? 'fade-out' : ''}`}
+                        >
+                            <div class="w-full"></div> {/* Spacer bovenaan */}
+
+                            <div class="flex flex-col items-center justify-center">
+                                {/* Logo Graphic */}
+                                <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
+                                    {/* Blauwe en Gele Kaarten */}
+                                    <div class="absolute w-28 h-36 bg-sky-400 rounded-xl transform -rotate-12 translate-x-[-15px] translate-y-[-5px] shadow-2xl border-2 border-sky-300"></div>
+                                    <div class="absolute w-28 h-36 bg-amber-400 rounded-xl transform rotate-6 translate-x-[15px] translate-y-[-10px] shadow-2xl border-2 border-amber-300"></div>
+                                    
+                                    {/* Ogen en Lach Emoticon */}
+                                    <div class="absolute z-10 flex flex-col items-center justify-center pt-2">
+                                        <div class="flex space-x-6 mb-3">
+                                            <div class="w-8 h-2 bg-slate-950 rounded-full transform rotate-12"></div>
+                                            <div class="w-8 h-2 bg-slate-950 rounded-full transform -rotate-12"></div>
+                                        </div>
+                                        <div class="w-24 h-12 border-b-8 border-slate-950 rounded-b-full"></div>
                                     </div>
-                                    <div class="w-24 h-12 border-b-8 border-slate-950 rounded-b-full"></div>
+                                </div>
+
+                                {/* Logo Tekst */}
+                                <div class="space-y-1">
+                                    <h1 class="text-4xl font-black tracking-wider text-amber-400 uppercase drop-shadow-md">
+                                        30 SECONDS
+                                    </h1>
+                                    <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent my-2"></div>
+                                    <p class="text-xl font-black text-rose-500 tracking-widest uppercase">
+                                        HEAO 30 JAAR
+                                    </p>
+                                    <p class="text-xs text-slate-400 font-semibold tracking-wider pt-2">
+                                        REÜNIE EDITION '96 - '26
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Logo Tekst */}
-                            <div class="space-y-1">
-                                <h1 class="text-4xl font-black tracking-wider text-amber-400 uppercase drop-shadow-md">
-                                    30 SECONDS
-                                </h1>
-                                <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent my-2"></div>
-                                <p class="text-xl font-black text-rose-500 tracking-widest uppercase">
-                                    HEAO 30 JAAR
-                                </p>
-                                <p class="text-xs text-slate-400 font-semibold tracking-wider pt-2">
-                                    REÜNIE EDITION '96 - '26
-                                </p>
+                            {/* Tik indicator onderin */}
+                            <div class="animate-bounce text-xs font-semibold text-rose-400 uppercase tracking-widest bg-rose-950/50 border border-rose-800/60 px-4 py-2 rounded-full">
+                                👆 Tik om te starten
                             </div>
                         </div>
                     )}
