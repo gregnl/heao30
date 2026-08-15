@@ -83,7 +83,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.0.21";
+        const APP_VERSION = "1.0.22";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
@@ -95,7 +95,7 @@
             { id: 2, name: 'Lachebekken', score: 0 }
         ];
 
-        // Web Audio Synthesizer voor Vurige Effecten
+        // Web Audio Synthesizer voor Vurige Effecten & Timer Geluiden
         const playSynthSound = {
             chargeTone: (pitch) => {
                 try {
@@ -116,7 +116,6 @@
                 try {
                     const ctx = new (window.AudioContext || window.webkitAudioContext)();
                     
-                    // Lage bas-knal
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sine';
@@ -129,7 +128,6 @@
                     osc.start();
                     osc.stop(ctx.currentTime + 0.5);
 
-                    // Vurige Ruis (Whoosh)
                     const bufferSize = ctx.sampleRate * 0.4;
                     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
                     const data = buffer.getChannelData(0);
@@ -144,6 +142,31 @@
                     noise.connect(noiseGain);
                     noiseGain.connect(ctx.destination);
                     noise.start();
+                } catch(e) {}
+            },
+            endBuzzer: () => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc1 = ctx.createOscillator();
+                    const osc2 = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc1.type = 'sawtooth';
+                    osc2.type = 'square';
+                    osc1.frequency.setValueAtTime(120, ctx.currentTime);
+                    osc2.frequency.setValueAtTime(124, ctx.currentTime);
+
+                    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc1.start();
+                    osc2.start();
+                    osc1.stop(ctx.currentTime + 0.8);
+                    osc2.stop(ctx.currentTime + 0.8);
                 } catch(e) {}
             }
         };
@@ -294,13 +317,11 @@
                         </p>
                     </div>
 
-                    {/* Rad en Container */}
                     <div class="relative w-72 h-72 my-4 flex items-center justify-center">
                         {!isExploded && (
                             <div class="absolute -top-3 z-20 w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-rose-600 drop-shadow-md"></div>
                         )}
 
-                        {/* Explosie Deeltjes Animatie */}
                         {isExploded && (
                             <div class="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
                                 {fireParticles.map(p => (
@@ -318,7 +339,6 @@
                             </div>
                         )}
 
-                        {/* Spinnend / Opzwellend Rad */}
                         {!isExploded && (
                             <div
                                 onMouseDown={startCharging}
@@ -378,7 +398,6 @@
                         )}
                     </div>
 
-                    {/* Snelheids- / Oplaadindicator */}
                     <div class="w-full space-y-3 px-2">
                         <div class="space-y-1">
                             <div class="flex justify-between text-xs font-black text-slate-500 dark:text-slate-400 uppercase">
@@ -397,7 +416,6 @@
                             </div>
                         </div>
 
-                        {/* Actieknoppen & Resultaat */}
                         {isExploded ? (
                             <button
                                 onClick={resetWheel}
@@ -537,7 +555,7 @@
                 }, 400);
             };
 
-            const playBeep = (freq = 600, type = 'square', duration = 0.1) => {
+            const playBeep = (freq = 750, type = 'square', duration = 0.12) => {
                 try {
                     const ctx = new (window.AudioContext || window.webkitAudioContext)();
                     const osc = ctx.createOscillator();
@@ -553,9 +571,13 @@
             };
 
             const playEndSound = () => {
+                // Synthesizer zoemer als betrouwbare fallback
+                playSynthSound.endBuzzer();
+                
+                // Probeer tevens het MP3 audiobestand af te spelen
                 try {
                     const audio = new Audio('end.mp3');
-                    audio.play().catch(err => console.log("Audio afspelen mislukt:", err));
+                    audio.play().catch(err => console.log("Audio MP3 afspelen mislukt:", err));
                 } catch(e) {}
             };
 
@@ -563,6 +585,7 @@
                 localStorage.setItem('heao96_teams', JSON.stringify(teams));
             }, [teams]);
 
+            // Herziene timer logic: piept exact op t = 4, 3, 2, 1 sec
             useEffect(() => {
                 let interval = null;
                 if (isTimerRunning && timeLeft > 0) {
@@ -570,7 +593,7 @@
                         setTimeLeft(t => {
                             const nextTime = t - 1;
                             if (nextTime >= 1 && nextTime <= 4) {
-                                playBeep(650, 'square', 0.1);
+                                playBeep(750, 'square', 0.12);
                             }
                             return nextTime;
                         });
@@ -943,8 +966,9 @@
                     {/* SCREEN: GAME OVER */}
                     {screen === 'game_over' && (
                         <div class="flex-1 flex flex-col justify-between items-center text-center py-2">
-                            <div class="my-auto space-y-5 w-full">
-                                <div class="text-6xl animate-bounce">🏆</div>
+                            <div class="my-auto space-y-5 w-full flex flex-col items-center">
+                                {/* Winnaarsbeker 2x zo groot (text-9xl) */}
+                                <div class="text-9xl animate-bounce leading-none drop-shadow-2xl my-2">🏆</div>
                                 <div>
                                     <h2 class="text-4xl font-black text-slate-800 dark:text-white">GEFELICITEERD!</h2>
                                     <p class="text-rose-600 dark:text-rose-400 font-black text-3xl mt-1">{teams[currentTeamIdx].name}</p>
