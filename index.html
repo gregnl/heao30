@@ -52,11 +52,11 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const APP_VERSION = "1.0.11";
+        const APP_VERSION = "1.0.12";
 
         const INITIAL_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
-            { id: 2, name: 'Pannekoeken', score: 0 }
+            { id: 2, name: 'Lachebekken', score: 0 }
         ];
 
         const sortAlphabetically = (words) => {
@@ -81,7 +81,7 @@
                 const saved = localStorage.getItem('heao96_teams');
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    if (parsed[0]?.name?.includes('Greg') || parsed[1]?.name?.includes('Ronald')) {
+                    if (parsed[0]?.name?.includes('Greg') || parsed[1]?.name?.includes('Ronald') || parsed[1]?.name === 'Pannekoeken') {
                         return INITIAL_TEAMS;
                     }
                     return parsed;
@@ -161,7 +161,10 @@
             const handleSplashClick = () => {
                 if (splashFading) return;
                 setSplashFading(true);
-                setTimeout(() => setShowSplash(false), 400);
+                setTimeout(() => {
+                    setShowSplash(false);
+                    setSplashFading(false);
+                }, 400);
             };
 
             const playBeep = (freq = 440, type = 'sine', duration = 0.1) => {
@@ -228,12 +231,11 @@
             };
 
             const handleCloseApp = () => {
-                if (confirm("Weet je zeker dat je de app wilt afsluiten?")) {
+                if (confirm("Weet je zeker dat je wilt herstarten en naar het startscherm wilt gaan?")) {
                     setIsTimerRunning(false);
-                    try {
-                        window.close();
-                    } catch (e) {}
-                    window.location.reload();
+                    resetGameScores();
+                    setScreen('setup');
+                    setShowSplash(true);
                 }
             };
 
@@ -302,6 +304,11 @@
             };
 
             const handleNextTeam = () => {
+                // Controleer of de streefscore is behaald voordat we de volgende beurt starten
+                if (teams[currentTeamIdx].score >= targetScore) {
+                    setScreen('game_over');
+                    return;
+                }
                 setCurrentTeamIdx((currentTeamIdx + 1) % teams.length);
                 handleStartTurn();
             };
@@ -377,7 +384,7 @@
                             <button 
                                 onClick={handleCloseApp}
                                 class="p-2 px-3 text-lg font-black bg-rose-100 dark:bg-rose-950/80 hover:bg-rose-200 dark:hover:bg-rose-900 text-rose-600 dark:text-rose-400 rounded-lg border border-rose-200 dark:border-rose-800 transition"
-                                title="App Afsluiten"
+                                title="Naar Startscherm"
                             >
                                 ✕
                             </button>
