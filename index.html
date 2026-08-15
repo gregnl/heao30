@@ -11,11 +11,11 @@
     <meta name="apple-mobile-web-app-title" content="HEAO-30">
     <meta name="application-name" content="HEAO-30s">
 
-    <!-- Apple Touch Icon (voor iOS startscherm) -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><rect width='500' height='500' fill='%230f172a'/><g transform='translate(50, 40)'><rect x='40' y='60' width='230' height='320' rx='28' fill='%2338bdf8' transform='rotate(-12 155 220)'/><rect x='130' y='40' width='230' height='320' rx='28' fill='%23fbbf24' transform='rotate(6 245 200)'/><path d='M 195 185 Q 220 172 245 185' stroke='%230f172a' stroke-width='16' stroke-linecap='round' fill='none'/><path d='M 290 185 Q 315 172 340 185' stroke='%230f172a' stroke-width='16' stroke-linecap='round' fill='none'/><path d='M 190 220 Q 265 330 340 220' stroke='%230f172a' stroke-width='16' stroke-linecap='round' fill='none'/></g></svg>">
+    <!-- Apple Touch Icon (Exact Matchend Logo) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23080b11'/><g transform='translate(50, 65)'><rect x='60' y='60' width='220' height='300' rx='28' fill='%2338bdf8' transform='rotate(-11 170 210)'/><rect x='125' y='30' width='225' height='305' rx='28' fill='%23facc15' transform='rotate(6 237 182)'/><path d='M 175 140 L 225 152' stroke='%23080b11' stroke-width='18' stroke-linecap='round'/><path d='M 275 162 L 325 150' stroke='%23080b11' stroke-width='18' stroke-linecap='round'/><path d='M 165 195 Q 240 300 325 205' stroke='%23080b11' stroke-width='16' stroke-linecap='round' fill='none'/></g></svg>">
 
-    <!-- Web App Manifest (voor Android startscherm) -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"HEAO-30","short_name":"HEAO-30","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 500 500%27><rect width=%27500%27 height=%27500%27 fill=%27%230f172a%27/><g transform=%27translate(50, 40)%27><rect x=%2740%27 y=%2760%27 width=%27230%27 height=%27320%27 rx=%2728%27 fill=%27%2338bdf8%27 transform=%27rotate(-12 155 220)%27/><rect x=%27130%27 y=%2740%27 width=%27230%27 height=%27320%27 rx=%2728%27 fill=%27%23fbbf24%27 transform=%27rotate(6 245 200)%27/><path d=%27M 195 185 Q 220 172 245 185%27 stroke=%27%230f172a%27 stroke-width=%2716%27 stroke-linecap=%27round%27 fill=%27none%27/><path d=%27M 290 185 Q 315 172 340 185%27 stroke=%27%230f172a%27 stroke-width=%2716%27 stroke-linecap=%27round%27 fill=%27none%27/><path d=%27M 190 220 Q 265 330 340 220%27 stroke=%27%230f172a%27 stroke-width=%2716%27 stroke-linecap=%27round%27 fill=%27none%27/></g></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
+    <!-- Web App Manifest (Exact Matchend Logo) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"HEAO-30","short_name":"HEAO-30","start_url":".","display":"standalone","background_color":"#080b11","theme_color":"#080b11","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 500 500%27><rect width=%27500%27 height=%27500%27 fill=%27%23080b11%27/><g transform=%27translate(50, 65)%27><rect x=%2760%27 y=%2760%27 width=%27220%27 height=%27300%27 rx=%2728%27 fill=%27%2338bdf8%27 transform=%27rotate(-11 170 210)%27/><rect x=%27125%27 y=%2730%27 width=%27225%27 height=%27305%27 rx=%2728%27 fill=%27%23facc15%27 transform=%27rotate(6 237 182)%27/><path d=%27M 175 140 L 225 152%27 stroke=%27%23080b11%27 stroke-width=%2718%27 stroke-linecap=%27round%27/><path d=%27M 275 162 L 325 150%27 stroke=%27%23080b11%27 stroke-width=%2718%27 stroke-linecap=%27round%27/><path d=%27M 165 195 Q 240 300 325 205%27 stroke=%27%23080b11%27 stroke-width=%2716%27 stroke-linecap=%27round%27 fill=%27none%27/></g></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,6 +46,9 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
+        // VERSINUMMER VAN DE APP (Verhoog dit nummer om een auto-update op telefoons te triggeren)
+        const APP_VERSION = "1.0.0";
+
         const INITIAL_WORDS = [
             "Ameland", "Berlijn", "Voorborrelen", "El Campello", "Gran Dorado",
             "Greg", "Gulden", "HEAO", "Krakau", "Lommerbergen", "Lissabon",
@@ -63,7 +66,6 @@
         };
 
         function App() {
-            // Splash screen state
             const [showSplash, setShowSplash] = useState(true);
             const [splashFading, setSplashFading] = useState(false);
 
@@ -92,9 +94,33 @@
             const [usedWords, setUsedWords] = useState([]);
             const [roundScore, setRoundScore] = useState(0);
 
-            // AUTOMATISCHE GITHUB SYNC BIJ OPSTARTEN
+            // 1. AUTOMATISCHE APP-CODE UPDATE (Controleert op nieuwere index.html)
             useEffect(() => {
-                const checkGitHubUpdates = async () => {
+                const checkForAppUpdate = async () => {
+                    try {
+                        const response = await fetch(`https://gregnl.github.io/heao30/index.html?t=${Date.now()}`);
+                        if (response.ok) {
+                            const htmlText = await response.text();
+                            const match = htmlText.match(/const\s+APP_VERSION\s*=\s*["']([^"']+)["']/);
+                            if (match && match[1]) {
+                                const remoteVersion = match[1];
+                                if (remoteVersion !== APP_VERSION) {
+                                    console.log(`Nieuwe app-versie gevonden (${remoteVersion}). App wordt bijgewerkt...`);
+                                    window.location.reload(true);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.log("Offline: Geen app-update controle mogelijk.");
+                    }
+                };
+
+                checkForAppUpdate();
+            }, []);
+
+            // 2. AUTOMATISCHE WOORDENLIJST SYNC BIJ OPSTARTEN
+            useEffect(() => {
+                const checkGitHubWords = async () => {
                     try {
                         const response = await fetch(`https://gregnl.github.io/heao30/heao96_30seconds_words.json?t=${Date.now()}`);
                         if (response.ok) {
@@ -111,11 +137,11 @@
                             }
                         }
                     } catch (error) {
-                        console.log("Offline of GitHub onbereikbaar. Gebruikt lokale opslag.");
+                        console.log("Offline of GitHub onbereikbaar. Lokale woordenlijst gebruikt.");
                     }
                 };
 
-                checkGitHubUpdates();
+                checkGitHubWords();
             }, []);
 
             const handleSplashClick = () => {
@@ -288,21 +314,22 @@
                     {showSplash && (
                         <div 
                             onClick={handleSplashClick} 
-                            class={`fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-between p-8 text-center select-none cursor-pointer ${splashFading ? 'fade-out' : ''}`}
+                            class={`fixed inset-0 z-50 bg-[#080b11] flex flex-col items-center justify-between p-8 text-center select-none cursor-pointer ${splashFading ? 'fade-out' : ''}`}
                         >
                             <div class="w-full"></div>
 
                             <div class="flex flex-col items-center justify-center">
-                                <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
-                                    <div class="absolute w-28 h-38 bg-sky-400 rounded-2xl transform -rotate-12 translate-x-[-15px] translate-y-[-5px] shadow-2xl border-2 border-sky-300"></div>
-                                    <div class="absolute w-28 h-38 bg-amber-400 rounded-2xl transform rotate-6 translate-x-[15px] translate-y-[-10px] shadow-2xl border-2 border-amber-300"></div>
+                                {/* Exact Matchend Origineel Logo Graphic */}
+                                <div class="relative w-52 h-52 mb-8 flex items-center justify-center">
+                                    <div class="absolute w-28 h-38 bg-sky-400 rounded-[22px] transform -rotate-[11deg] translate-x-[-18px] translate-y-[10px] shadow-2xl"></div>
+                                    <div class="absolute w-29 h-39 bg-amber-400 rounded-[22px] transform rotate-[6deg] translate-x-[15px] translate-y-[-8px] shadow-2xl"></div>
                                     
-                                    <div class="absolute z-10 flex flex-col items-center justify-center pt-2">
-                                        <div class="flex space-x-6 mb-3">
-                                            <div class="w-7 h-2 bg-slate-950 rounded-full transform rotate-12"></div>
-                                            <div class="w-7 h-2 bg-slate-950 rounded-full transform -rotate-12"></div>
+                                    <div class="absolute z-10 flex flex-col items-center justify-center pt-1 translate-x-[8px] translate-y-[-8px]">
+                                        <div class="flex space-x-7 mb-4">
+                                            <div class="w-7 h-2 bg-[#080b11] rounded-full transform rotate-[14deg]"></div>
+                                            <div class="w-7 h-2 bg-[#080b11] rounded-full transform -rotate-[14deg]"></div>
                                         </div>
-                                        <div class="w-22 h-10 border-b-8 border-slate-950 rounded-b-full"></div>
+                                        <div class="w-24 h-12 border-b-[7px] border-[#080b11] rounded-b-full"></div>
                                     </div>
                                 </div>
 
