@@ -52,7 +52,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const APP_VERSION = "1.0.12";
+        const APP_VERSION = "1.0.13";
 
         const INITIAL_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
@@ -296,7 +296,8 @@
                     return updated;
                 });
 
-                if (isWinner) {
+                // Direct navigeren naar winnaarsscherm bij behalen streefscore
+                if (isWinner || teams[currentTeamIdx].score + score >= targetScore) {
                     setScreen('game_over');
                 } else {
                     setScreen('turn_summary');
@@ -304,11 +305,6 @@
             };
 
             const handleNextTeam = () => {
-                // Controleer of de streefscore is behaald voordat we de volgende beurt starten
-                if (teams[currentTeamIdx].score >= targetScore) {
-                    setScreen('game_over');
-                    return;
-                }
                 setCurrentTeamIdx((currentTeamIdx + 1) % teams.length);
                 handleStartTurn();
             };
