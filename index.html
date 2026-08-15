@@ -51,7 +51,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const APP_VERSION = "1.0.9";
+        const APP_VERSION = "1.0.10";
 
         const INITIAL_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
@@ -317,34 +317,25 @@
                             <div class="w-full"></div>
 
                             <div class="flex flex-col items-center justify-center">
-                                {/* NIEUWE LOGO SVG */}
                                 <div class="relative w-64 h-64 mb-4 flex items-center justify-center">
                                     <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-2xl">
-                                        <!-- Blauwe kaart -->
                                         <rect x="70" y="110" width="130" height="190" rx="18" fill="#29b6f6" transform="rotate(-12 135 205)"/>
-                                        <!-- Gele kaart -->
                                         <rect x="200" y="85" width="130" height="190" rx="18" fill="#fbc02d" transform="rotate(7 265 180)"/>
                                         
-                                        <!-- Ogen blauwe kaart -->
                                         <ellipse cx="120" cy="170" rx="12" ry="16" fill="#ffffff"/>
                                         <ellipse cx="158" cy="158" rx="12" ry="16" fill="#ffffff"/>
                                         <circle cx="122" cy="162" r="7" fill="#080b11"/>
                                         <circle cx="160" cy="150" r="7" fill="#080b11"/>
                                         
-                                        <!-- Wenkbrauwen/Ogen gele kaart -->
                                         <path d="M 225 150 Q 245 135 265 150" stroke="#080b11" stroke-width="7" stroke-linecap="round" fill="none"/>
                                         <path d="M 280 155 Q 300 140 320 155" stroke="#080b11" stroke-width="7" stroke-linecap="round" fill="none"/>
                                         
-                                        <!-- Mond blauwe kaart -->
                                         <path d="M 105 200 Q 140 175 168 205 Q 140 235 105 200 Z" fill="#080b11"/>
                                         
-                                        <!-- Mond gele kaart -->
                                         <path d="M 235 185 Q 280 230 320 180 C 300 220 250 220 235 185 Z" fill="#080b11"/>
                                         
-                                        <!-- Bovenste Tong (van geel naar links) -->
                                         <path d="M 245 190 C 280 215 250 265 180 245 C 150 235 190 205 230 195 Z" fill="#ff4d6d" stroke="#080b11" stroke-width="5"/>
                                         
-                                        <!-- Onderste Tong (van blauw naar rechts krullend) -->
                                         <path d="M 140 195 C 240 215 280 270 230 285 C 195 295 160 245 130 220 Z" fill="#ff4d6d" stroke="#080b11" stroke-width="5"/>
                                         <path d="M 180 232 C 195 240 215 245 235 235" stroke="#080b11" stroke-width="4" fill="none" stroke-linecap="round"/>
                                     </svg>
