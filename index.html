@@ -52,7 +52,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const APP_VERSION = "1.0.14";
+        const APP_VERSION = "1.0.15";
 
         const INITIAL_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
@@ -167,7 +167,7 @@
                 }, 400);
             };
 
-            const playBeep = (freq = 440, type = 'sine', duration = 0.1) => {
+            const playBeep = (freq = 600, type = 'square', duration = 0.1) => {
                 try {
                     const ctx = new (window.AudioContext || window.webkitAudioContext)();
                     const osc = ctx.createOscillator();
@@ -188,12 +188,12 @@
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sawtooth';
-                    osc.frequency.value = 140;
+                    osc.frequency.value = 130;
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
-                    osc.stop(ctx.currentTime + 0.8);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.9);
+                    osc.stop(ctx.currentTime + 0.9);
                 } catch(e) {}
             };
 
@@ -206,15 +206,17 @@
                 if (isTimerRunning && timeLeft > 0) {
                     interval = setInterval(() => {
                         setTimeLeft(t => {
-                            if (t <= 5 && t > 1) playBeep(600, 'square', 0.08);
-                            if (t === 1) playBeep(880, 'square', 0.3);
-                            return t - 1;
+                            const nextTime = t - 1;
+                            if (nextTime >= 1 && nextTime <= 4) {
+                                playBeep(650, 'square', 0.1);
+                            }
+                            return nextTime;
                         });
                     }, 1000);
                 } else if (timeLeft === 0 && isTimerRunning) {
                     setIsTimerRunning(false);
                     playBuzzer();
-                    handleFinishTurn();
+                    handleFinishTurn(true);
                 }
                 return () => clearInterval(interval);
             }, [isTimerRunning, timeLeft]);
@@ -291,9 +293,12 @@
                 setCheckedWords(next);
             };
 
-            const handleFinishTurn = () => {
+            const handleFinishTurn = (fromTimeout = false) => {
                 setIsTimerRunning(false);
-                playBuzzer();
+                if (!fromTimeout) {
+                    playBuzzer();
+                }
+                
                 const score = checkedWords.filter(Boolean).length;
                 setLastTurnScore(score);
 
@@ -526,7 +531,7 @@
                             </div>
 
                             <button
-                                onClick={handleFinishTurn}
+                                onClick={() => handleFinishTurn(false)}
                                 class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold py-4 rounded-xl border border-slate-300 dark:border-slate-600 text-lg shrink-0"
                             >
                                 Ronde Nu Afronden ➔
@@ -568,13 +573,23 @@
 
                     {/* SCREEN: GAME OVER */}
                     {screen === 'game_over' && (
-                        <div class="flex-1 flex flex-col justify-between items-center text-center py-4">
-                            <div class="my-auto space-y-6">
-                                <div class="text-7xl">🏆</div>
+                        <div class="flex-1 flex flex-col justify-between items-center text-center py-2">
+                            <div class="my-auto space-y-5 w-full">
+                                <div class="text-6xl animate-bounce">🏆</div>
                                 <div>
                                     <h2 class="text-4xl font-black text-slate-800 dark:text-white">GEFELICITEERD!</h2>
-                                    <p class="text-rose-600 dark:text-rose-400 font-black text-3xl mt-2">{teams[currentTeamIdx].name}</p>
-                                    <p class="text-lg text-slate-600 dark:text-slate-300 font-bold mt-2">Heeft de streefscore van {targetScore} punten gehaald!</p>
+                                    <p class="text-rose-600 dark:text-rose-400 font-black text-3xl mt-1">{teams[currentTeamIdx].name}</p>
+                                    <p class="text-base text-slate-600 dark:text-slate-300 font-bold mt-1">Heeft de streefscore van {targetScore} punten gehaald!</p>
+                                </div>
+
+                                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-left space-y-2 w-full">
+                                    <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2">Eindstand</h3>
+                                    {[...teams].sort((a, b) => b.score - a.score).map((t, idx) => (
+                                        <div key={t.id} class={`flex justify-between py-2 px-3.5 rounded-lg text-lg ${t.id === teams[currentTeamIdx].id ? 'bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-800 font-black text-rose-900 dark:text-rose-100' : 'text-slate-700 dark:text-slate-300 font-bold'}`}>
+                                            <span>{idx + 1}. {t.name}</span>
+                                            <span class="font-mono font-black text-rose-600 dark:text-rose-400">{t.score} ptn</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -583,7 +598,7 @@
                                     resetGameScores();
                                     setScreen('setup');
                                 }}
-                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-xl text-xl shrink-0"
+                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-xl text-xl shrink-0 shadow-lg active:scale-95 transition"
                             >
                                 Nieuw Spel Starten 🔄
                             </button>
