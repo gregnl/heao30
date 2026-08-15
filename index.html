@@ -52,7 +52,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const APP_VERSION = "1.0.15";
+        const APP_VERSION = "1.0.16";
 
         const INITIAL_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
@@ -182,18 +182,10 @@
                 } catch(e) {}
             };
 
-            const playBuzzer = () => {
+            const playEndSound = () => {
                 try {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sawtooth';
-                    osc.frequency.value = 130;
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.9);
-                    osc.stop(ctx.currentTime + 0.9);
+                    const audio = new Audio('end.mp3');
+                    audio.play().catch(err => console.log("Audio afspelen mislukt:", err));
                 } catch(e) {}
             };
 
@@ -215,7 +207,7 @@
                     }, 1000);
                 } else if (timeLeft === 0 && isTimerRunning) {
                     setIsTimerRunning(false);
-                    playBuzzer();
+                    playEndSound();
                     handleFinishTurn(true);
                 }
                 return () => clearInterval(interval);
@@ -296,7 +288,7 @@
             const handleFinishTurn = (fromTimeout = false) => {
                 setIsTimerRunning(false);
                 if (!fromTimeout) {
-                    playBuzzer();
+                    playEndSound();
                 }
                 
                 const score = checkedWords.filter(Boolean).length;
@@ -361,7 +353,7 @@
                                         HEAO 30 JAAR
                                     </p>
                                     <p class="text-base text-slate-300 font-bold tracking-wider pt-1">
-                                        REÜNIE EDITION '96 - '26
+                                        REÜNIE EDITIE '96 - '26
                                     </p>
                                 </div>
                             </div>
