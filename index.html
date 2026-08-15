@@ -43,6 +43,37 @@
             from { opacity: 1; visibility: visible; }
             to { opacity: 0; visibility: hidden; }
         }
+
+        /* Vurige Opzwel- en Explosie-animaties */
+        @keyframes swell {
+            0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+            50% { transform: scale(1.25) rotate(15deg); filter: brightness(1.8) drop-shadow(0 0 25px #f97316); }
+            100% { transform: scale(1.4) rotate(-10deg); filter: brightness(2.5) drop-shadow(0 0 40px #ef4444); }
+        }
+        .animate-swell {
+            animation: swell 0.6s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+        }
+
+        @keyframes explodeParticle {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(0); opacity: 0; }
+        }
+        .particle-fire {
+            animation: explodeParticle 0.8s ease-out forwards;
+        }
+
+        /* Screen Shake effect bij explosie */
+        @keyframes screenShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-8px, 6px) rotate(-1deg); }
+            40% { transform: translate(8px, -6px) rotate(1deg); }
+            60% { transform: translate(-5px, -4px) rotate(-0.5deg); }
+            80% { transform: translate(5px, 4px) rotate(0.5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .animate-shake {
+            animation: screenShake 0.35s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen h-dvh max-h-dvh overflow-hidden selection:bg-rose-500 selection:text-white transition-colors duration-200">
@@ -52,7 +83,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.0.19";
+        const APP_VERSION = "1.0.21";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
@@ -64,14 +95,70 @@
             { id: 2, name: 'Lachebekken', score: 0 }
         ];
 
+        // Web Audio Synthesizer voor Vurige Effecten
+        const playSynthSound = {
+            chargeTone: (pitch) => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150 + (pitch * 4), ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.08);
+                } catch(e) {}
+            },
+            explosionBoom: () => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Lage bas-knal
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(180, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.5);
+                    gain.gain.setValueAtTime(0.8, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.5);
+
+                    // Vurige Ruis (Whoosh)
+                    const bufferSize = ctx.sampleRate * 0.4;
+                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const noiseGain = ctx.createGain();
+                    noiseGain.gain.setValueAtTime(0.4, ctx.currentTime);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                    noise.connect(noiseGain);
+                    noiseGain.connect(ctx.destination);
+                    noise.start();
+                } catch(e) {}
+            }
+        };
+
         const sortAlphabetically = (words) => {
             return [...words].sort((a, b) => a.localeCompare(b, 'nl', { sensitivity: 'base' }));
         };
 
         function WheelRandomizer({ teams, onWinnerSelected }) {
-            const [charge, setCharge] = useState(0); // 0 tot 100
+            const [charge, setCharge] = useState(0);
             const [isCharging, setIsCharging] = useState(false);
             const [isSpinning, setIsSpinning] = useState(false);
+            const [isExploded, setIsExploded] = useState(false);
+            const [isSwelling, setIsSwelling] = useState(false);
+            const [isShaking, setIsShaking] = useState(false);
             const [rotation, setRotation] = useState(0);
             const [winner, setWinner] = useState(null);
 
@@ -83,29 +170,57 @@
             const segmentAngle = 360 / numSegments;
 
             const startCharging = () => {
-                if (isSpinning || winner) return;
+                if (isSpinning || winner || isExploded || isSwelling) return;
                 setIsCharging(true);
                 chargeRef.current = 0;
                 setCharge(0);
 
                 chargeInterval.current = setInterval(() => {
-                    chargeRef.current += 2;
+                    chargeRef.current += 2.5;
                     if (chargeRef.current >= 100) {
                         chargeRef.current = 100;
                         setCharge(100);
-                        stopChargingAndSpin();
+                        clearInterval(chargeInterval.current);
+                        triggerExplosion();
                     } else {
                         setCharge(chargeRef.current);
+                        playSynthSound.chargeTone(chargeRef.current);
+                        if (navigator.vibrate && chargeRef.current % 10 === 0) {
+                            navigator.vibrate(15);
+                        }
                     }
                 }, 30);
             };
 
+            const triggerExplosion = () => {
+                setIsCharging(false);
+                setIsSwelling(true);
+
+                setTimeout(() => {
+                    setIsSwelling(false);
+                    setIsExploded(true);
+                    setIsShaking(true);
+                    playSynthSound.explosionBoom();
+                    if (navigator.vibrate) {
+                        navigator.vibrate([200, 50, 150]);
+                    }
+                    setTimeout(() => setIsShaking(false), 350);
+                }, 500);
+            };
+
+            const resetWheel = () => {
+                setIsExploded(false);
+                setIsSwelling(false);
+                setCharge(0);
+                chargeRef.current = 0;
+            };
+
             const stopChargingAndSpin = () => {
-                if (!isCharging && chargeRef.current === 0) return;
+                if (!isCharging || isExploded || isSwelling) return;
                 clearInterval(chargeInterval.current);
                 setIsCharging(false);
 
-                if (isSpinning || winner) return;
+                if (chargeRef.current >= 100) return;
 
                 const finalCharge = chargeRef.current;
                 chargeRef.current = 0;
@@ -116,21 +231,18 @@
             const spinWheel = (chargePower) => {
                 setIsSpinning(true);
 
-                // Minimaal 4 rondjes, maximaal 12 rondjes op basis van opgebouwde kracht
                 const minRotations = 360 * 4;
-                const extraRotations = (chargePower / 100) * (360 * 8);
+                const extraRotations = (chargePower / 100) * (360 * 7);
                 const randomOffset = Math.random() * 360;
                 const totalRotation = rotation + minRotations + extraRotations + randomOffset;
 
                 const startTime = performance.now();
-                const duration = 4000 + (chargePower / 100) * 2000; // 4s tot 6s draaitijd
+                const duration = 3500 + (chargePower / 100) * 1500;
                 const initialRot = rotation;
 
                 const animate = (currentTime) => {
                     const elapsed = currentTime - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    
-                    // Ease out cubic voor geleidelijke vertraging
                     const easeOut = 1 - Math.pow(1 - progress, 3);
                     const currentRot = initialRot + (totalRotation - initialRot) * easeOut;
 
@@ -140,16 +252,10 @@
                         animFrame.current = requestAnimationFrame(animate);
                     } else {
                         setIsSpinning(false);
-                        
-                        // Bepaal winnaar
                         const normalizedAngle = (360 - (currentRot % 360)) % 360;
                         const winningIndex = Math.floor(normalizedAngle / segmentAngle);
                         const selectedTeam = teams[winningIndex];
-                        setWinner(selectedTeam);
-
-                        setTimeout(() => {
-                            onWinnerSelected(winningIndex);
-                        }, 2200);
+                        setWinner({ team: selectedTeam, index: winningIndex });
                     }
                 };
 
@@ -163,96 +269,154 @@
                 };
             }, []);
 
+            const fireParticles = Array.from({ length: 20 }).map((_, i) => {
+                const angle = (i / 20) * 360;
+                const dist = 130 + Math.random() * 90;
+                const tx = `${Math.cos((angle * Math.PI) / 180) * dist}px`;
+                const ty = `${Math.sin((angle * Math.PI) / 180) * dist}px`;
+                const colors = ['#ef4444', '#f97316', '#eab308', '#dc2626'];
+                const bg = colors[i % colors.length];
+                return { tx, ty, bg, id: i };
+            });
+
             return (
-                <div class="flex-1 flex flex-col items-center justify-between py-2 my-auto select-none">
+                <div class={`flex-1 flex flex-col items-center justify-between py-2 my-auto select-none ${isShaking ? 'animate-shake' : ''}`}>
                     <div class="text-center space-y-1">
                         <h2 class="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-wider">
                             Wie Begint Er?
                         </h2>
                         <p class="text-sm font-bold text-slate-500 dark:text-slate-400">
-                            {winner ? "Startteam gekozen!" : "Houd het rad ingedrukt om op te laden!"}
+                            {isExploded 
+                                ? "💥 TE VEEL KRACHT! Het wiel is ontploft!" 
+                                : winner 
+                                ? "Startteam gekozen!" 
+                                : "Houd het rad ingedrukt om op te laden!"}
                         </p>
                     </div>
 
-                    {/* Rad en Pijl */}
+                    {/* Rad en Container */}
                     <div class="relative w-72 h-72 my-4 flex items-center justify-center">
-                        {/* Wijzer / Pijl (bovenkant) */}
-                        <div class="absolute -top-3 z-20 w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-rose-600 drop-shadow-md"></div>
+                        {!isExploded && (
+                            <div class="absolute -top-3 z-20 w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-rose-600 drop-shadow-md"></div>
+                        )}
 
-                        {/* spinnend wiel */}
-                        <div
-                            onMouseDown={startCharging}
-                            onMouseUp={stopChargingAndSpin}
-                            onTouchStart={startCharging}
-                            onTouchEnd={stopChargingAndSpin}
-                            style={{
-                                transform: `rotate(${rotation}deg)`,
-                                transition: isSpinning ? 'none' : 'transform 0.1s ease-out'
-                            }}
-                            class={`w-full h-full rounded-full border-4 border-slate-800 dark:border-slate-200 shadow-2xl relative overflow-hidden cursor-pointer ${isCharging ? 'scale-105 transition-transform' : ''}`}
-                        >
-                            <svg viewBox="0 0 100 100" class="w-full h-full rounded-full">
-                                {teams.map((team, idx) => {
-                                    const startAngle = idx * segmentAngle;
-                                    const endAngle = (idx + 1) * segmentAngle;
-                                    const x1 = 50 + 50 * Math.cos((Math.PI * (startAngle - 90)) / 180);
-                                    const y1 = 50 + 50 * Math.sin((Math.PI * (startAngle - 90)) / 180);
-                                    const x2 = 50 + 50 * Math.cos((Math.PI * (endAngle - 90)) / 180);
-                                    const y2 = 50 + 50 * Math.sin((Math.PI * (endAngle - 90)) / 180);
-                                    const largeArc = segmentAngle > 180 ? 1 : 0;
-                                    const pathData = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                        {/* Explosie Deeltjes Animatie */}
+                        {isExploded && (
+                            <div class="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                                {fireParticles.map(p => (
+                                    <div
+                                        key={p.id}
+                                        style={{
+                                            '--tw-translate-x': p.tx,
+                                            '--tw-translate-y': p.ty,
+                                            backgroundColor: p.bg
+                                        }}
+                                        class="absolute w-6 h-6 rounded-full particle-fire shadow-xl"
+                                    ></div>
+                                ))}
+                                <div class="text-7xl animate-bounce">🔥</div>
+                            </div>
+                        )}
 
-                                    const textAngle = startAngle + segmentAngle / 2;
-                                    const textRad = (Math.PI * (textAngle - 90)) / 180;
-                                    const textX = 50 + 30 * Math.cos(textRad);
-                                    const textY = 50 + 30 * Math.sin(textRad);
+                        {/* Spinnend / Opzwellend Rad */}
+                        {!isExploded && (
+                            <div
+                                onMouseDown={startCharging}
+                                onMouseUp={stopChargingAndSpin}
+                                onTouchStart={startCharging}
+                                onTouchEnd={stopChargingAndSpin}
+                                style={{
+                                    transform: `rotate(${rotation}deg)`,
+                                    transition: isSpinning ? 'none' : 'transform 0.1s ease-out'
+                                }}
+                                class={`w-full h-full rounded-full border-4 border-slate-800 dark:border-slate-200 shadow-2xl relative overflow-hidden cursor-pointer ${
+                                    isSwelling ? 'animate-swell' : isCharging ? 'scale-105 shadow-orange-500/50' : ''
+                                }`}
+                            >
+                                <svg viewBox="0 0 100 100" class="w-full h-full rounded-full">
+                                    {teams.map((team, idx) => {
+                                        const startAngle = idx * segmentAngle;
+                                        const endAngle = (idx + 1) * segmentAngle;
+                                        const x1 = 50 + 50 * Math.cos((Math.PI * (startAngle - 90)) / 180);
+                                        const y1 = 50 + 50 * Math.sin((Math.PI * (startAngle - 90)) / 180);
+                                        const x2 = 50 + 50 * Math.cos((Math.PI * (endAngle - 90)) / 180);
+                                        const y2 = 50 + 50 * Math.sin((Math.PI * (endAngle - 90)) / 180);
+                                        const largeArc = segmentAngle > 180 ? 1 : 0;
+                                        const pathData = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`;
 
-                                    return (
-                                        <g key={team.id}>
-                                            <path d={pathData} fill={TEAM_COLORS[idx % TEAM_COLORS.length]} />
-                                            <text
-                                                x={textX}
-                                                y={textY}
-                                                fill="#ffffff"
-                                                fontSize="6"
-                                                fontWeight="900"
-                                                textAnchor="middle"
-                                                dominantBaseline="central"
-                                                transform={`rotate(${textAngle + 90}, ${textX}, ${textY})`}
-                                            >
-                                                {team.name.length > 10 ? team.name.substring(0, 9) + '..' : team.name}
-                                            </text>
-                                        </g>
-                                    );
-                                })}
-                            </svg>
-                        </div>
+                                        const textAngle = startAngle + segmentAngle / 2;
+                                        const textRad = (Math.PI * (textAngle - 90)) / 180;
+                                        const textX = 50 + 30 * Math.cos(textRad);
+                                        const textY = 50 + 30 * Math.sin(textRad);
 
-                        {/* Middendop */}
-                        <div class="absolute w-12 h-12 bg-slate-900 border-4 border-white rounded-full flex items-center justify-center text-xl z-10 pointer-events-none shadow-md">
-                            🎲
-                        </div>
+                                        return (
+                                            <g key={team.id}>
+                                                <path d={pathData} fill={TEAM_COLORS[idx % TEAM_COLORS.length]} />
+                                                <text
+                                                    x={textX}
+                                                    y={textY}
+                                                    fill="#ffffff"
+                                                    fontSize="6"
+                                                    fontWeight="900"
+                                                    textAnchor="middle"
+                                                    dominantBaseline="central"
+                                                    transform={`rotate(${textAngle + 90}, ${textX}, ${textY})`}
+                                                >
+                                                    {team.name.length > 10 ? team.name.substring(0, 9) + '..' : team.name}
+                                                </text>
+                                            </g>
+                                        );
+                                    })}
+                                </svg>
+                            </div>
+                        )}
+
+                        {!isExploded && (
+                            <div class="absolute w-12 h-12 bg-slate-900 border-4 border-white rounded-full flex items-center justify-center text-xl z-10 pointer-events-none shadow-md">
+                                {isCharging ? '🔥' : '🎲'}
+                            </div>
+                        )}
                     </div>
 
                     {/* Snelheids- / Oplaadindicator */}
                     <div class="w-full space-y-3 px-2">
                         <div class="space-y-1">
                             <div class="flex justify-between text-xs font-black text-slate-500 dark:text-slate-400 uppercase">
-                                <span>Snelheid / Power</span>
-                                <span>{charge === 100 ? '🔥 MAXIMAAL!' : `${charge}%`}</span>
+                                <span>KRACHT / DRUK</span>
+                                <span class={charge >= 80 ? 'text-orange-500 font-extrabold' : ''}>
+                                    {isExploded ? '💥 100% ONTPLOPT' : `${Math.round(charge)}%`}
+                                </span>
                             </div>
                             <div class="w-full h-4 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300 dark:border-slate-700 p-0.5">
                                 <div
                                     style={{ width: `${charge}%` }}
-                                    class={`h-full rounded-full transition-all duration-75 ${charge === 100 ? 'bg-gradient-to-r from-amber-500 to-rose-600 animate-pulse' : 'bg-rose-500'}`}
+                                    class={`h-full rounded-full transition-all duration-75 ${
+                                        charge >= 80 ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 animate-pulse' : 'bg-rose-500'
+                                    }`}
                                 ></div>
                             </div>
                         </div>
 
-                        {winner ? (
-                            <div class="p-3 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-400 dark:border-emerald-600 rounded-xl text-center animate-bounce">
-                                <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase">Mag beginnen:</p>
-                                <p class="text-2xl font-black text-emerald-900 dark:text-emerald-100">{winner.name} 🎉</p>
+                        {/* Actieknoppen & Resultaat */}
+                        {isExploded ? (
+                            <button
+                                onClick={resetWheel}
+                                class="w-full py-4 rounded-xl text-lg font-black text-white bg-amber-600 hover:bg-amber-500 shadow-lg active:scale-95 transition"
+                            >
+                                Opnieuw proberen 🔄
+                            </button>
+                        ) : winner ? (
+                            <div class="space-y-3">
+                                <div class="p-3 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-400 dark:border-emerald-600 rounded-xl text-center">
+                                    <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase">Mag beginnen:</p>
+                                    <p class="text-2xl font-black text-emerald-900 dark:text-emerald-100">{winner.team.name} 🎉</p>
+                                </div>
+                                <button
+                                    onClick={() => onWinnerSelected(winner.index)}
+                                    class="w-full py-4 rounded-xl text-xl font-black text-white bg-rose-600 hover:bg-rose-500 shadow-xl active:scale-95 transition"
+                                >
+                                    Start Het Spel ➔
+                                </button>
                             </div>
                         ) : (
                             <button
@@ -260,10 +424,12 @@
                                 onMouseUp={stopChargingAndSpin}
                                 onTouchStart={startCharging}
                                 onTouchEnd={stopChargingAndSpin}
-                                disabled={isSpinning}
-                                class={`w-full py-3.5 rounded-xl text-lg font-black text-white shadow-lg transition active:scale-95 ${isCharging ? 'bg-amber-500 scale-98' : 'bg-rose-600 hover:bg-rose-500'}`}
+                                disabled={isSpinning || isSwelling}
+                                class={`w-full py-4 rounded-xl text-lg font-black text-white shadow-lg transition active:scale-95 ${
+                                    isCharging ? 'bg-gradient-to-r from-amber-500 to-orange-600 scale-98' : 'bg-rose-600 hover:bg-rose-500'
+                                }`}
                             >
-                                {isSpinning ? 'AAN HET DRAAIEN... 🌀' : isCharging ? 'DRUK VAST... 🚀' : 'HOUD INGEDRUKT OM TE DRAAIEN 🎯'}
+                                {isSpinning ? 'AAN HET DRAAIEN... 🌀' : isCharging ? 'LAAT OP TIJD LOS! 💥' : 'HOUD INGEDRUKT OM TE DRAAIEN 🎯'}
                             </button>
                         )}
                     </div>
@@ -275,7 +441,6 @@
             const [showSplash, setShowSplash] = useState(true);
             const [splashFading, setSplashFading] = useState(false);
 
-            // Light / Dark mode state
             const [darkMode, setDarkMode] = useState(() => {
                 const savedTheme = localStorage.getItem('heao30_theme');
                 return savedTheme ? savedTheme === 'dark' : true;
@@ -310,7 +475,6 @@
             const [usedWords, setUsedWords] = useState([]);
             const [lastTurnScore, setLastTurnScore] = useState(0);
 
-            // Theme sync met HTML class
             useEffect(() => {
                 if (darkMode) {
                     document.documentElement.classList.add('dark');
@@ -321,7 +485,6 @@
                 }
             }, [darkMode]);
 
-            // Automatic App Code Update
             useEffect(() => {
                 const checkForAppUpdate = async () => {
                     try {
@@ -345,7 +508,6 @@
                 checkForAppUpdate();
             }, []);
 
-            // Dynamische Woordenlijst ophalen van GitHub
             useEffect(() => {
                 const fetchGitHubWords = async () => {
                     try {
