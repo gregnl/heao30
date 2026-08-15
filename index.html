@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>30 Seconds - HEAO '96 Editie</title>
+    <title>30 Seconds - HEAO '96 Edition</title>
     
     <!-- PWA / Standalone App meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HEAO-30">
-    <meta name="application-name" content="HEAO-30s">
+    <meta name="application-name" content="HEAO-30">
 
     <!-- Apple Touch Icon (Exact Matchend Logo) -->
     <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23080b11'/><g transform='translate(50, 65)'><rect x='60' y='60' width='220' height='300' rx='28' fill='%2338bdf8' transform='rotate(-11 170 210)'/><rect x='125' y='30' width='225' height='305' rx='28' fill='%23facc15' transform='rotate(6 237 182)'/><path d='M 175 140 L 225 152' stroke='%23080b11' stroke-width='18' stroke-linecap='round'/><path d='M 275 162 L 325 150' stroke='%23080b11' stroke-width='18' stroke-linecap='round'/><path d='M 165 195 Q 240 300 325 205' stroke='%23080b11' stroke-width='16' stroke-linecap='round' fill='none'/></g></svg>">
@@ -46,8 +46,8 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // VERSINUMMER VAN DE APP (Verhoog dit nummer om een auto-update op telefoons te triggeren)
-        const APP_VERSION = "1.0.0";
+        // VERSINUMMER VAN DE APP
+        const APP_VERSION = "1.0.1";
 
         const INITIAL_WORDS = [
             "Ameland", "Berlijn", "Voorborrelen", "El Campello", "Gran Dorado",
@@ -94,7 +94,7 @@
             const [usedWords, setUsedWords] = useState([]);
             const [roundScore, setRoundScore] = useState(0);
 
-            // 1. AUTOMATISCHE APP-CODE UPDATE (Controleert op nieuwere index.html)
+            // 1. AUTOMATISCHE APP-CODE UPDATE
             useEffect(() => {
                 const checkForAppUpdate = async () => {
                     try {
@@ -347,8 +347,13 @@
                                 </div>
                             </div>
 
-                            <div class="animate-bounce text-xs font-semibold text-rose-400 uppercase tracking-widest bg-rose-950/50 border border-rose-800/60 px-4 py-2 rounded-full">
-                                👆 Tik om te starten
+                            <div class="flex flex-col items-center space-y-1.5">
+                                <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase">
+                                    v{APP_VERSION}
+                                </span>
+                                <div class="animate-bounce text-xs font-semibold text-rose-400 uppercase tracking-widest bg-rose-950/50 border border-rose-800/60 px-4 py-2 rounded-full">
+                                    🖕🏽 Tik om te starten
+                                </div>
                             </div>
                         </div>
                     )}
