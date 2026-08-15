@@ -11,10 +11,10 @@
     <meta name="apple-mobile-web-app-title" content="HEAO-30">
     <meta name="application-name" content="HEAO-30">
 
-    <!-- Apple Touch Icon (Exact Matchend Logo) -->
+    <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23080b11'/><g transform='translate(50, 65)'><rect x='60' y='60' width='220' height='300' rx='28' fill='%2338bdf8' transform='rotate(-11 170 210)'/><rect x='125' y='30' width='225' height='305' rx='28' fill='%23facc15' transform='rotate(6 237 182)'/><path d='M 175 140 L 225 152' stroke='%23080b11' stroke-width='18' stroke-linecap='round'/><path d='M 275 162 L 325 150' stroke='%23080b11' stroke-width='18' stroke-linecap='round'/><path d='M 165 195 Q 240 300 325 205' stroke='%23080b11' stroke-width='16' stroke-linecap='round' fill='none'/></g></svg>">
 
-    <!-- Web App Manifest (Exact Matchend Logo) -->
+    <!-- Web App Manifest -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"HEAO-30","short_name":"HEAO-30","start_url":".","display":"standalone","background_color":"#080b11","theme_color":"#080b11","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 500 500%27><rect width=%27500%27 height=%27500%27 fill=%27%23080b11%27/><g transform=%27translate(50, 65)%27><rect x=%2760%27 y=%2760%27 width=%27220%27 height=%27300%27 rx=%2728%27 fill=%27%2338bdf8%27 transform=%27rotate(-11 170 210)%27/><rect x=%27125%27 y=%2730%27 width=%27225%27 height=%27305%27 rx=%2728%27 fill=%27%23facc15%27 transform=%27rotate(6 237 182)%27/><path d=%27M 175 140 L 225 152%27 stroke=%27%23080b11%27 stroke-width=%2718%27 stroke-linecap=%27round%27/><path d=%27M 275 162 L 325 150%27 stroke=%27%23080b11%27 stroke-width=%2718%27 stroke-linecap=%27round%27/><path d=%27M 165 195 Q 240 300 325 205%27 stroke=%27%23080b11%27 stroke-width=%2716%27 stroke-linecap=%27round%27 fill=%27none%27/></g></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
 
     <!-- Tailwind CSS -->
@@ -47,7 +47,7 @@
         const { useState, useEffect } = React;
 
         // VERSINUMMER VAN DE APP
-        const APP_VERSION = "1.0.1";
+        const APP_VERSION = "1.0.2";
 
         const INITIAL_WORDS = [
             "Ameland", "Berlijn", "Voorborrelen", "El Campello", "Gran Dorado",
@@ -57,8 +57,8 @@
         ];
 
         const INITIAL_TEAMS = [
-            { id: 1, name: 'Team 1 (Greg & Co)', score: 0 },
-            { id: 2, name: 'Team 2 (Ronald & Co)', score: 0 }
+            { id: 1, name: 'Oliebollen', score: 0 },
+            { id: 2, name: 'Pannekoeken', score: 0 }
         ];
 
         const sortAlphabetically = (words) => {
@@ -75,7 +75,15 @@
             
             const [teams, setTeams] = useState(() => {
                 const saved = localStorage.getItem('heao96_teams');
-                return saved ? JSON.parse(saved) : INITIAL_TEAMS;
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    // Update oren als nog oude teamnamen in storage staan
+                    if (parsed[0]?.name?.includes('Greg') || parsed[1]?.name?.includes('Ronald')) {
+                        return INITIAL_TEAMS;
+                    }
+                    return parsed;
+                }
+                return INITIAL_TEAMS;
             });
 
             const [wordList, setWordList] = useState(() => {
@@ -319,7 +327,7 @@
                             <div class="w-full"></div>
 
                             <div class="flex flex-col items-center justify-center">
-                                {/* Exact Matchend Origineel Logo Graphic */}
+                                {/* Exact Matchend Origineel Logo Graphic (Blauw + Geel Kaartje met Lachende Oogjes) */}
                                 <div class="relative w-52 h-52 mb-8 flex items-center justify-center">
                                     <div class="absolute w-28 h-38 bg-sky-400 rounded-[22px] transform -rotate-[11deg] translate-x-[-18px] translate-y-[10px] shadow-2xl"></div>
                                     <div class="absolute w-29 h-39 bg-amber-400 rounded-[22px] transform rotate-[6deg] translate-x-[15px] translate-y-[-8px] shadow-2xl"></div>
