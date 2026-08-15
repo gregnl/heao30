@@ -51,7 +51,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const APP_VERSION = "1.0.3";
+        const APP_VERSION = "1.0.4";
 
         const INITIAL_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
@@ -284,48 +284,43 @@
 
                             <div class="flex flex-col items-center justify-center">
                                 {/* Matchend 30 Seconds Logo Graphic */}
-                                <div class="relative w-56 h-56 mb-6 flex items-center justify-center">
+                                <div class="relative w-64 h-64 mb-6 flex items-center justify-center">
                                     <svg viewBox="0 0 300 300" class="w-full h-full drop-shadow-2xl">
                                         {/* Blauw kaartje */}
                                         <rect x="55" y="80" width="115" height="155" rx="12" fill="#29B6F6" transform="rotate(-18 112 157)" />
                                         {/* Geel kaartje */}
                                         <rect x="130" y="65" width="115" height="155" rx="12" fill="#FBC02D" transform="rotate(8 187 142)" />
                                         
-                                        {/* Gezicht: Oogjes & Blije Mond (Loopt over beide kaartjes) */}
+                                        {/* Gezicht: Oogjes & Blije Mond */}
                                         <g fill="none" stroke="#111622" stroke-linecap="round">
-                                            {/* Linkeroogjes */}
                                             <path d="M 90 115 Q 105 102 120 115" stroke-width="8" />
                                             <path d="M 88 128 Q 105 115 122 128" stroke-width="8" />
-                                            
-                                            {/* Rechteroogjes */}
                                             <path d="M 160 110 Q 178 97 195 110" stroke-width="8" />
                                             <path d="M 162 123 Q 178 110 196 123" stroke-width="8" />
-
-                                            {/* Grote Lachende Mond met Vulling */}
                                             <path d="M 100 150 Q 148 215 198 145 Z" fill="#111622" stroke-width="2" />
                                         </g>
                                     </svg>
                                 </div>
 
                                 <div class="space-y-1">
-                                    <h1 class="text-4xl font-black tracking-wider text-[#FBC02D] uppercase drop-shadow-md">
+                                    <h1 class="text-5xl font-black tracking-wider text-[#FBC02D] uppercase drop-shadow-md">
                                         30 SECONDS
                                     </h1>
-                                    <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-[#FBC02D] to-transparent my-2"></div>
-                                    <p class="text-xl font-black text-rose-500 tracking-widest uppercase">
+                                    <div class="w-full h-1 bg-gradient-to-r from-transparent via-[#FBC02D] to-transparent my-3"></div>
+                                    <p class="text-2xl font-black text-rose-500 tracking-widest uppercase">
                                         HEAO 30 JAAR
                                     </p>
-                                    <p class="text-xs text-slate-400 font-semibold tracking-wider pt-1">
+                                    <p class="text-sm text-slate-300 font-semibold tracking-wider pt-1">
                                         REÜNIE EDITION '96 - '26
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="flex flex-col items-center space-y-1.5">
-                                <span class="text-[10px] font-bold text-slate-500 tracking-widest uppercase">
+                            <div class="flex flex-col items-center space-y-2">
+                                <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">
                                     v{APP_VERSION}
                                 </span>
-                                <div class="animate-bounce text-xs font-semibold text-rose-400 uppercase tracking-widest bg-rose-950/50 border border-rose-800/60 px-4 py-2 rounded-full">
+                                <div class="animate-bounce text-sm font-bold text-rose-300 uppercase tracking-widest bg-rose-950/80 border border-rose-700 px-5 py-2.5 rounded-full">
                                     🖕🏽 Tik om te starten
                                 </div>
                             </div>
@@ -333,15 +328,15 @@
                     )}
 
                     {/* Header met Light / Dark Toggle */}
-                    <header class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800 shrink-0 mb-2">
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-rose-600 text-white font-extrabold text-xs px-2 py-1 rounded">HEAO-30</span>
-                            <h1 class="font-bold text-base text-slate-800 dark:text-slate-100 tracking-tight">30 Seconds</h1>
+                    <header class="flex justify-between items-center py-2.5 border-b border-slate-200 dark:border-slate-800 shrink-0 mb-2">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="bg-rose-600 text-white font-black text-sm px-2.5 py-1 rounded-md">HEAO-30</span>
+                            <h1 class="font-bold text-lg text-slate-800 dark:text-slate-100 tracking-tight">30 Seconds</h1>
                         </div>
                         
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2.5">
                             {(screen === 'turn_start' || screen === 'playing' || screen === 'turn_summary') && (
-                                <button onClick={handleAbortGame} class="text-xs bg-rose-100 dark:bg-rose-950/60 hover:bg-rose-200 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 py-1.5 px-3 rounded-lg border border-rose-300 dark:border-rose-800/80 font-medium transition">
+                                <button onClick={handleAbortGame} class="text-sm bg-rose-100 dark:bg-rose-950/80 hover:bg-rose-200 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 py-1.5 px-3 rounded-lg border border-rose-300 dark:border-rose-800 font-bold transition">
                                     🛑 Stop
                                 </button>
                             )}
@@ -349,7 +344,7 @@
                             {/* Light/Dark Mode Toggle */}
                             <button 
                                 onClick={() => setDarkMode(!darkMode)}
-                                class="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg border border-slate-300 dark:border-slate-700 transition"
+                                class="p-2 text-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg border border-slate-300 dark:border-slate-700 transition"
                                 title="Schakel Thema"
                             >
                                 {darkMode ? '☀️' : '🌙'}
@@ -361,58 +356,58 @@
                     {screen === 'setup' && (
                         <div class="flex-1 flex flex-col justify-between overflow-hidden">
                             <div class="space-y-4 overflow-y-auto pr-1 py-1">
-                                <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/50">
-                                    <h2 class="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider mb-2">Teams Invoeren</h2>
-                                    <div class="space-y-2">
+                                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                                    <h2 class="text-sm font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider mb-2.5">Teams Invoeren</h2>
+                                    <div class="space-y-2.5">
                                         {teams.map((team) => (
                                             <div key={team.id} class="flex items-center space-x-2">
                                                 <input
                                                     type="text"
                                                     value={team.name}
                                                     onChange={(e) => handleUpdateTeamName(team.id, e.target.value)}
-                                                    class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-rose-500"
+                                                    class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3.5 py-2 text-base font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:border-rose-500"
                                                 />
                                                 {teams.length > 2 && (
-                                                    <button onClick={() => handleRemoveTeam(team.id)} class="text-slate-400 hover:text-rose-500 p-2">✕</button>
+                                                    <button onClick={() => handleRemoveTeam(team.id)} class="text-slate-400 hover:text-rose-500 p-2 text-lg font-bold">✕</button>
                                                 )}
                                             </div>
                                         ))}
                                     </div>
-                                    <button onClick={handleAddTeam} class="mt-2 text-xs text-rose-600 dark:text-rose-400 font-semibold hover:underline flex items-center">
+                                    <button onClick={handleAddTeam} class="mt-3 text-sm text-rose-600 dark:text-rose-400 font-bold hover:underline flex items-center">
                                         + Team Toevoegen
                                     </button>
                                 </div>
 
-                                <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-3">
-                                    <h2 class="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Spelinstellingen</h2>
+                                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-3.5">
+                                    <h2 class="text-sm font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Spelinstellingen</h2>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm text-slate-700 dark:text-slate-300">Timer Duur (Seconden)</span>
+                                        <span class="text-base font-medium text-slate-700 dark:text-slate-300">Timer Duur (sec)</span>
                                         <input
                                             type="number"
                                             value={timerLength}
                                             onChange={(e) => setTimerLength(Number(e.target.value))}
-                                            class="w-20 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 text-center text-sm font-semibold text-slate-800 dark:text-slate-100"
+                                            class="w-24 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-center text-base font-bold text-slate-800 dark:text-slate-100"
                                         />
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm text-slate-700 dark:text-slate-300">Streefscore (Punten)</span>
+                                        <span class="text-base font-medium text-slate-700 dark:text-slate-300">Streefscore (ptn)</span>
                                         <input
                                             type="number"
                                             value={targetScore}
                                             onChange={(e) => setTargetScore(Number(e.target.value))}
-                                            class="w-20 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 text-center text-sm font-semibold text-slate-800 dark:text-slate-100"
+                                            class="w-24 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-center text-base font-bold text-slate-800 dark:text-slate-100"
                                         />
                                     </div>
                                 </div>
                                 
-                                <div class="text-center text-xs text-slate-400 dark:text-slate-500 pt-1">
-                                    Geladen woorden: <span class="font-bold text-slate-600 dark:text-slate-300">{wordList.length}</span>
+                                <div class="text-center text-sm text-slate-500 dark:text-slate-400 font-medium pt-1">
+                                    Geladen woorden: <span class="font-bold text-slate-700 dark:text-slate-200">{wordList.length}</span>
                                 </div>
                             </div>
 
                             <button
                                 onClick={handleStartTurn}
-                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-center shadow-lg shadow-rose-900/30 active:scale-95 transition shrink-0 mt-2"
+                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3.5 rounded-xl text-lg text-center shadow-lg shadow-rose-900/30 active:scale-95 transition shrink-0 mt-2"
                             >
                                 Start Het Spel! 🚀
                             </button>
@@ -422,21 +417,21 @@
                     {/* SCREEN: TURN START */}
                     {screen === 'turn_start' && (
                         <div class="flex-1 flex flex-col justify-between items-center text-center my-auto py-4">
-                            <div class="my-auto space-y-4 w-full">
-                                <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-full">
-                                    <p class="text-xs text-rose-600 dark:text-rose-400 font-bold uppercase tracking-widest mb-1">Aan de beurt</p>
-                                    <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white mb-2">{teams[currentTeamIdx].name}</h2>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400">Huidige score: <span class="font-bold text-slate-700 dark:text-slate-200">{teams[currentTeamIdx].score}</span> / {targetScore} ptn</p>
+                            <div class="my-auto space-y-5 w-full">
+                                <div class="bg-slate-50 dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-full">
+                                    <p class="text-sm text-rose-600 dark:text-rose-400 font-bold uppercase tracking-widest mb-1.5">Aan de beurt</p>
+                                    <h2 class="text-3xl font-black text-slate-800 dark:text-white mb-2">{teams[currentTeamIdx].name}</h2>
+                                    <p class="text-base text-slate-600 dark:text-slate-300">Huidige score: <span class="font-black text-rose-600 dark:text-rose-400 text-xl">{teams[currentTeamIdx].score}</span> / {targetScore} ptn</p>
                                 </div>
 
-                                <div class="text-slate-500 dark:text-slate-400 text-xs px-4">
+                                <div class="text-slate-600 dark:text-slate-300 text-sm font-medium px-4 leading-relaxed">
                                     Zorg dat de omschrijver de telefoon vasthoudt. Zodra je op "START TIMER" klikt lopen de 30 seconden direct!
                                 </div>
                             </div>
 
                             <button
                                 onClick={handleBeginTimer}
-                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3.5 rounded-xl text-lg shadow-xl shadow-rose-900/40 active:scale-95 transition shrink-0"
+                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-xl text-xl shadow-xl shadow-rose-900/40 active:scale-95 transition shrink-0"
                             >
                                 START TIMER ⏱️
                             </button>
@@ -446,29 +441,30 @@
                     {/* SCREEN: PLAYING */}
                     {screen === 'playing' && (
                         <div class="flex-1 flex flex-col justify-between py-1">
-                            <div class="flex justify-between items-center bg-slate-100 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+                            <div class="flex justify-between items-center bg-slate-100 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
                                 <div>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400">{teams[currentTeamIdx].name}</p>
+                                    <p class="text-sm font-bold text-slate-600 dark:text-slate-300">{teams[currentTeamIdx].name}</p>
                                     <p class="text-xs text-rose-600 dark:text-rose-400 font-bold">Vink aan wat geraden is!</p>
                                 </div>
-                                <div class={`text-2xl font-black font-mono px-3 py-1 rounded-lg ${timeLeft <= 5 ? 'bg-rose-600 text-white pulse-fast' : 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 border border-slate-200 dark:border-slate-700'}`}>
+                                <div class={`text-3xl font-black font-mono px-3.5 py-1 rounded-xl ${timeLeft <= 5 ? 'bg-rose-600 text-white pulse-fast' : 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 border border-slate-200 dark:border-slate-700'}`}>
                                     {timeLeft}s
                                 </div>
                             </div>
 
-                            <div class="space-y-2 my-auto py-2">
+                            {/* Woordenlijst met extra grote tekst */}
+                            <div class="space-y-2.5 my-auto py-2">
                                 {currentWords.map((word, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => toggleCheckWord(idx)}
-                                        class={`w-full p-3 rounded-xl text-left font-bold text-sm transition flex justify-between items-center border ${
+                                        class={`w-full p-3.5 rounded-xl text-left font-extrabold text-lg transition flex justify-between items-center border ${
                                             checkedWords[idx]
-                                                ? 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-400 dark:border-emerald-500 text-emerald-900 dark:text-emerald-200 shadow-sm'
+                                                ? 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-400 dark:border-emerald-500 text-emerald-950 dark:text-emerald-100 shadow-sm'
                                                 : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100'
                                         }`}
                                     >
-                                        <span>{word}</span>
-                                        <span class={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black ${
+                                        <span class="leading-tight">{word}</span>
+                                        <span class={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-black shrink-0 ml-2 ${
                                             checkedWords[idx] ? 'bg-emerald-500 text-white dark:text-slate-950' : 'border-2 border-slate-300 dark:border-slate-600'
                                         }`}>
                                             {checkedWords[idx] ? '✓' : ''}
@@ -479,7 +475,7 @@
 
                             <button
                                 onClick={handleFinishTurn}
-                                class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-3 rounded-xl border border-slate-300 dark:border-slate-600 shrink-0"
+                                class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 text-base shrink-0"
                             >
                                 Ronde Nu Afronden ➔
                             </button>
@@ -489,21 +485,21 @@
                     {/* SCREEN: TURN SUMMARY */}
                     {screen === 'turn_summary' && (
                         <div class="flex-1 flex flex-col justify-between py-2">
-                            <div class="text-center my-auto space-y-3">
-                                <div class="inline-block bg-rose-100 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 p-3 rounded-full">
-                                    <span class="text-3xl">🎉</span>
+                            <div class="text-center my-auto space-y-4">
+                                <div class="inline-block bg-rose-100 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 p-3.5 rounded-full">
+                                    <span class="text-4xl">🎉</span>
                                 </div>
-                                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Ronde Afgelopen!</h2>
-                                <p class="text-slate-600 dark:text-slate-300 text-sm">
-                                    <span class="font-bold text-rose-600 dark:text-rose-400">{teams[currentTeamIdx].name}</span> heeft <span class="font-extrabold text-slate-900 dark:text-white text-lg">{checkedWords.filter(Boolean).length}</span> punten gescoord!
+                                <h2 class="text-2xl font-black text-slate-800 dark:text-slate-100">Ronde Afgelopen!</h2>
+                                <p class="text-slate-700 dark:text-slate-200 text-base font-medium">
+                                    <span class="font-black text-rose-600 dark:text-rose-400">{teams[currentTeamIdx].name}</span> heeft <span class="font-black text-slate-900 dark:text-white text-2xl">{checkedWords.filter(Boolean).length}</span> punten gescoord!
                                 </p>
 
-                                <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-left space-y-1.5 mt-2">
-                                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tussenstand</h3>
+                                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-left space-y-2 mt-2">
+                                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tussenstand</h3>
                                     {teams.map((t, idx) => (
-                                        <div key={t.id} class={`flex justify-between py-1 px-2 rounded text-sm ${idx === currentTeamIdx ? 'bg-slate-200 dark:bg-slate-700/50 font-bold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
+                                        <div key={t.id} class={`flex justify-between py-1.5 px-3 rounded-lg text-base ${idx === currentTeamIdx ? 'bg-slate-200 dark:bg-slate-700/60 font-black text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300 font-semibold'}`}>
                                             <span>{t.name}</span>
-                                            <span class="font-mono text-rose-600 dark:text-rose-400">{t.score} ptn</span>
+                                            <span class="font-mono font-bold text-rose-600 dark:text-rose-400">{t.score} ptn</span>
                                         </div>
                                     ))}
                                 </div>
@@ -511,7 +507,7 @@
 
                             <button
                                 onClick={handleNextTeam}
-                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-center shadow-lg active:scale-95 transition shrink-0"
+                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3.5 rounded-xl text-lg text-center shadow-lg active:scale-95 transition shrink-0"
                             >
                                 Volgende Team Aan De Beurt ➔
                             </button>
@@ -521,12 +517,12 @@
                     {/* SCREEN: GAME OVER */}
                     {screen === 'game_over' && (
                         <div class="flex-1 flex flex-col justify-between items-center text-center py-4">
-                            <div class="my-auto space-y-4">
-                                <div class="text-5xl">🏆</div>
+                            <div class="my-auto space-y-5">
+                                <div class="text-6xl">🏆</div>
                                 <div>
-                                    <h2 class="text-2xl font-black text-slate-800 dark:text-white">GEFELICITEERD!</h2>
-                                    <p class="text-rose-600 dark:text-rose-400 font-bold text-lg mt-1">{teams[currentTeamIdx].name}</p>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Heeft de streefscore van {targetScore} punten gehaald!</p>
+                                    <h2 class="text-3xl font-black text-slate-800 dark:text-white">GEFELICITEERD!</h2>
+                                    <p class="text-rose-600 dark:text-rose-400 font-black text-2xl mt-1.5">{teams[currentTeamIdx].name}</p>
+                                    <p class="text-base text-slate-600 dark:text-slate-300 font-medium mt-2">Heeft de streefscore van {targetScore} punten gehaald!</p>
                                 </div>
                             </div>
 
@@ -535,7 +531,7 @@
                                     setTeams(teams.map(t => ({ ...t, score: 0 })));
                                     setScreen('setup');
                                 }}
-                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3.5 rounded-xl shrink-0"
+                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-xl text-lg shrink-0"
                             >
                                 Nieuw Spel Starten 🔄
                             </button>
