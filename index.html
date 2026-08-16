@@ -83,7 +83,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.0.24";
+        const APP_VERSION = "1.0.25";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
@@ -96,7 +96,7 @@
         ];
 
         const DIFFICULTY_OPTIONS = [
-            { id: 'heao', label: 'HEAO \'96 Speficieke Woorden' },
+            { id: 'heao', label: 'HEAO \'96' },
             { id: 'makkelijk', label: 'Makkelijk' },
             { id: 'gemiddeld', label: 'Gemiddeld' },
             { id: 'moeilijk', label: 'Moeilijk' }
@@ -479,10 +479,10 @@
             const [timerLength, setTimerLength] = useState(30);
             const [targetScore, setTargetScore] = useState(30);
             
-            // Categorieën / Moeilijkheidsgraden selectie
-            const [selectedDifficulties, setSelectedDifficulties] = useState(() => {
-                const saved = localStorage.getItem('heao96_difficulties');
-                return saved ? JSON.parse(saved) : ['heao', 'makkelijk', 'gemiddeld', 'moeilijk'];
+            // Één enkele geselecteerde moeilijkheidsgraad/set
+            const [selectedDifficulty, setSelectedDifficulty] = useState(() => {
+                const saved = localStorage.getItem('heao96_difficulty');
+                return saved || 'heao';
             });
 
             const [teams, setTeams] = useState(() => {
@@ -521,8 +521,8 @@
             }, [darkMode]);
 
             useEffect(() => {
-                localStorage.setItem('heao96_difficulties', JSON.stringify(selectedDifficulties));
-            }, [selectedDifficulties]);
+                localStorage.setItem('heao96_difficulty', selectedDifficulty);
+            }, [selectedDifficulty]);
 
             useEffect(() => {
                 const checkForAppUpdate = async () => {
@@ -576,25 +576,13 @@
                 }, 400);
             };
 
-            const toggleDifficulty = (id) => {
-                setSelectedDifficulties(prev => {
-                    if (prev.includes(id)) {
-                        if (prev.length === 1) return prev; // Zorg dat er altijd minimaal 1 gekozen blijft
-                        return prev.filter(item => item !== id);
-                    } else {
-                        return [...prev, id];
-                    }
-                });
-            };
-
             const getFilteredWords = () => {
                 if (wordList.length === 0) return [];
 
                 return wordList.filter(item => {
-                    // Ondersteuning voor platte strings (standaard) én objecten met niveau-tag ({ word: "...", level: "heao" })
                     if (typeof item === 'string') return true; 
                     const itemLevel = item.level ? item.level.toLowerCase() : 'gemiddeld';
-                    return selectedDifficulties.includes(itemLevel);
+                    return itemLevel === selectedDifficulty;
                 }).map(item => typeof item === 'string' ? item : item.word);
             };
 
@@ -865,28 +853,28 @@
                                     </button>
                                 </div>
 
-                                {/* NIEUW: Categorieën & Moeilijkheidsgraad Selectie */}
+                                {/* Knoppen naast elkaar: Woordenset Selectie (Radio) */}
                                 <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-3">
-                                    <h2 class="text-base font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Moeilijkheidsgraad & Woorden</h2>
-                                    <div class="grid grid-cols-1 gap-2">
+                                    <h2 class="text-base font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Kies Woordenset</h2>
+                                    <div class="grid grid-cols-2 gap-2">
                                         {DIFFICULTY_OPTIONS.map(opt => {
-                                            const isChecked = selectedDifficulties.includes(opt.id);
+                                            const isSelected = selectedDifficulty === opt.id;
                                             return (
                                                 <button
                                                     key={opt.id}
                                                     type="button"
-                                                    onClick={() => toggleDifficulty(opt.id)}
-                                                    class={`flex items-center justify-between p-3 rounded-lg font-bold text-left border transition ${
-                                                        isChecked 
-                                                            ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-400 dark:border-rose-600 text-rose-900 dark:text-rose-100' 
-                                                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400 opacity-60'
+                                                    onClick={() => setSelectedDifficulty(opt.id)}
+                                                    class={`flex items-center justify-between p-3 rounded-lg font-bold text-sm border transition ${
+                                                        isSelected 
+                                                            ? 'bg-rose-600 border-rose-600 text-white shadow-md' 
+                                                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                                                     }`}
                                                 >
-                                                    <span>{opt.label}</span>
-                                                    <span class={`w-6 h-6 rounded-md flex items-center justify-center border font-black text-sm ${
-                                                        isChecked ? 'bg-rose-600 text-white border-rose-600' : 'border-slate-400'
+                                                    <span class="truncate">{opt.label}</span>
+                                                    <span class={`w-4 h-4 rounded-full flex items-center justify-center border-2 shrink-0 ml-1.5 ${
+                                                        isSelected ? 'border-white bg-white' : 'border-slate-400'
                                                     }`}>
-                                                        {isChecked ? '✓' : ''}
+                                                        {isSelected && <span class="w-2 h-2 rounded-full bg-rose-600"></span>}
                                                     </span>
                                                 </button>
                                             );
@@ -917,7 +905,7 @@
                                 </div>
                                 
                                 <div class="text-center text-base text-slate-500 dark:text-slate-400 font-semibold pt-1">
-                                    Actieve woorden: <span class="font-extrabold text-slate-800 dark:text-slate-200">{getFilteredWords().length}</span> / {wordList.length} <span class="text-xs font-bold text-slate-400">(v{APP_VERSION})</span>
+                                    Actieve woorden in deze set: <span class="font-extrabold text-slate-800 dark:text-slate-200">{getFilteredWords().length}</span> / {wordList.length} <span class="text-xs font-bold text-slate-400">(v{APP_VERSION})</span>
                                 </div>
                             </div>
 
