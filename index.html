@@ -83,7 +83,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.0.25";
+        const APP_VERSION = "1.0.26";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
@@ -479,7 +479,6 @@
             const [timerLength, setTimerLength] = useState(30);
             const [targetScore, setTargetScore] = useState(30);
             
-            // Één enkele geselecteerde moeilijkheidsgraad/set
             const [selectedDifficulty, setSelectedDifficulty] = useState(() => {
                 const saved = localStorage.getItem('heao96_difficulty');
                 return saved || 'heao';
@@ -547,20 +546,46 @@
                 checkForAppUpdate();
             }, []);
 
+            // Inladen van alle 4 de losse JSON-bestanden van GitHub
             useEffect(() => {
                 const fetchGitHubWords = async () => {
+                    const files = [
+                        { name: 'words-heao.json', level: 'heao' },
+                        { name: 'words-easy.json', level: 'makkelijk' },
+                        { name: 'words-intermediate.json', level: 'gemiddeld' },
+                        { name: 'words-difficult.json', level: 'moeilijk' }
+                    ];
+
                     try {
-                        const response = await fetch(`https://gregnl.github.io/heao30/heao96_30seconds_words.json?t=${Date.now()}`);
-                        if (response.ok) {
-                            const remoteWords = await response.json();
-                            if (Array.isArray(remoteWords) && remoteWords.length > 0) {
-                                const sortedRemote = sortAlphabetically(remoteWords);
-                                setWordList(sortedRemote);
-                                localStorage.setItem('heao96_words', JSON.stringify(sortedRemote));
-                            }
+                        const timestamp = Date.now();
+                        const fetchPromises = files.map(f => 
+                            fetch(`https://gregnl.github.io/heao30/${f.name}?t=${timestamp}`, { cache: 'no-store' })
+                                .then(res => res.ok ? res.json() : [])
+                                .then(data => {
+                                    if (Array.isArray(data)) {
+                                        return data.map(item => {
+                                            if (typeof item === 'string') {
+                                                return { word: item, level: f.level };
+                                            }
+                                            return { ...item, level: item.level || f.level };
+                                        });
+                                    }
+                                    return [];
+                                })
+                                .catch(() => [])
+                        );
+
+                        const results = await Promise.all(fetchPromises);
+                        const combinedWords = results.flat();
+
+                        if (combinedWords.length > 0) {
+                            const sortedWords = sortAlphabetically(combinedWords);
+                            setWordList(sortedWords);
+                            localStorage.setItem('heao96_words', JSON.stringify(sortedWords));
+                            console.log(`Succesvol ${sortedWords.length} woorden geladen uit 4 JSON bestanden.`);
                         }
                     } catch (error) {
-                        console.log("Offline of GitHub onbereikbaar. Opgeslagen woordenlijst gebruikt.");
+                        console.log("Offline of GitHub onbereikbaar. Opgeslagen woordenlijst uit localStorage gebruikt.");
                     }
                 };
 
@@ -853,7 +878,7 @@
                                     </button>
                                 </div>
 
-                                {/* Knoppen naast elkaar: Woordenset Selectie (Radio) */}
+                                {/* Woordenset Selectie (Radio buttons naast elkaar) */}
                                 <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-3">
                                     <h2 class="text-base font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Kies Woordenset</h2>
                                     <div class="grid grid-cols-2 gap-2">
