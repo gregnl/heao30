@@ -83,7 +83,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.0.26";
+        const APP_VERSION = "1.0.27";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
@@ -553,7 +553,7 @@
                         { name: 'words-heao.json', level: 'heao' },
                         { name: 'words-easy.json', level: 'makkelijk' },
                         { name: 'words-intermediate.json', level: 'gemiddeld' },
-                        { name: 'words-difficult.json', level: 'moeilijk' }
+                        { name: 'words-hard.json', level: 'moeilijk' }
                     ];
 
                     try {
@@ -582,7 +582,7 @@
                             const sortedWords = sortAlphabetically(combinedWords);
                             setWordList(sortedWords);
                             localStorage.setItem('heao96_words', JSON.stringify(sortedWords));
-                            console.log(`Succesvol ${sortedWords.length} woorden geladen uit 4 JSON bestanden.`);
+                            console.log(`Succesvol ${sortedWords.length} woorden geladen uit de 4 JSON bestanden.`);
                         }
                     } catch (error) {
                         console.log("Offline of GitHub onbereikbaar. Opgeslagen woordenlijst uit localStorage gebruikt.");
