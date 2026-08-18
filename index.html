@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>30 Seconds - HEAO '96 Editie v2.0.0</title>
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -10,8 +13,14 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    body { user-select: none; -webkit-user-select: none; }
-    .wheel-rotate { transition: transform 3s cubic-bezier(0.15, 0.90, 0.2, 1.00); }
+    body { 
+      user-select: none; 
+      -webkit-user-select: none; 
+      background-color: #0f172a;
+    }
+    .wheel-rotate { 
+      transition: transform 3s cubic-bezier(0.15, 0.90, 0.2, 1.00); 
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen font-sans flex flex-col justify-between p-4">
@@ -19,9 +28,9 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect } = React;
 
-    const APP_VERSION = "v2.0.0";
+    const APP_VERSION = "v2.0.0 (V28 UI)";
 
     function App() {
       // Game States: 'HOME', 'WHEEL', 'CARD', 'SCORE'
@@ -35,8 +44,15 @@
       const [loading, setLoading] = useState(true);
       const [statusMessage, setStatusMessage] = useState("Laden...");
 
+      // Team namen & scores
+      const [team1Name, setTeam1Name] = useState("Team 1");
+      const [team2Name, setTeam2Name] = useState("Team 2");
+      const [team1Score, setTeam1Score] = useState(0);
+      const [team2Score, setTeam2Score] = useState(0);
+      const [activeTeam, setActiveTeam] = useState(1);
+
       // Gameplay states
-      const [wheelHandicap, setWheelHandicap] = useState(null); // 0, 1, or 2
+      const [wheelHandicap, setWheelHandicap] = useState(null);
       const [isSpinning, setIsSpinning] = useState(false);
       const [wheelRotation, setWheelRotation] = useState(0);
 
@@ -45,11 +61,7 @@
       const [timeLeft, setTimeLeft] = useState(30);
       const [timerActive, setTimerActive] = useState(false);
 
-      const [team1Score, setTeam1Score] = useState(0);
-      const [team2Score, setTeam2Score] = useState(0);
-      const [activeTeam, setActiveTeam] = useState(1);
-
-      // Audio & Vibration helpers
+      // Audio Beeper
       const playBeep = () => {
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -62,7 +74,7 @@
         } catch(e) {}
       };
 
-      // 1. Initialisatie & Manifest/Versie-controle
+      // 1. Manifest & Woordenlijsten Sync
       useEffect(() => {
         async function initApp() {
           try {
@@ -117,7 +129,7 @@
         initApp();
       }, []);
 
-      // 2. Timer Logica
+      // 2. Timer Mechanism
       useEffect(() => {
         let interval = null;
         if (timerActive && timeLeft > 0) {
@@ -134,7 +146,7 @@
         return () => clearInterval(interval);
       }, [timerActive, timeLeft]);
 
-      // Category Selection helpers
+      // Category Handlers
       const saveSelection = (newSelection) => {
         setSelectedCategoryIds(newSelection);
         localStorage.setItem("selected_categories", JSON.stringify(newSelection));
@@ -151,18 +163,17 @@
       const selectAll = () => saveSelection(manifest.files.map(f => f.id));
       const selectNone = () => saveSelection([]);
 
-      // Start Spel -> Rad Scherm
+      // Game Actions
       const handleStartGame = () => {
         setWheelHandicap(null);
         setGameState('WHEEL');
       };
 
-      // Draai aan het Rad
       const spinWheel = () => {
         if (isSpinning) return;
         setIsSpinning(true);
 
-        const outcome = Math.floor(Math.random() * 3); // 0, 1, or 2
+        const outcome = Math.floor(Math.random() * 3);
         const extraTurns = 4 * 360;
         const segmentDegrees = 120;
         const targetDeg = extraTurns + (outcome * segmentDegrees) + 60;
@@ -175,7 +186,6 @@
         }, 3000);
       };
 
-      // Trek 5 willekeurige woorden uit gekozen lijsten
       const startRound = () => {
         let activePool = [];
         selectedCategoryIds.forEach(id => {
@@ -185,11 +195,10 @@
         });
 
         if (activePool.length < 5) {
-          alert("Niet genoeg woorden beschikbaar in de geselecteerde lijsten!");
+          alert("Selecteer minimaal 1 woordenlijst met genoeg woorden!");
           return;
         }
 
-        // Shuffle & pick 5
         const shuffled = [...activePool].sort(() => 0.5 - Math.random());
         setCurrentWords(shuffled.slice(0, 5));
         setCheckedWords([false, false, false, false, false]);
@@ -198,14 +207,12 @@
         setGameState('CARD');
       };
 
-      // Vink woord af
       const toggleWordCheck = (index) => {
         const next = [...checkedWords];
         next[index] = !next[index];
         setCheckedWords(next);
       };
 
-      // Ronde afronden & Score berekenen
       const finishRound = () => {
         setTimerActive(false);
         const guessedCount = checkedWords.filter(Boolean).length;
@@ -220,7 +227,6 @@
         setGameState('SCORE');
       };
 
-      // Volgende Beurt
       const nextTurn = () => {
         setActiveTeam(activeTeam === 1 ? 2 : 1);
         setWheelHandicap(null);
@@ -229,7 +235,7 @@
 
       if (loading) {
         return (
-          <div class="flex flex-col items-center justify-center min-h-screen text-center p-6">
+          <div class="flex flex-col items-center justify-center min-h-screen text-center p-6 bg-slate-900">
             <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
             <p class="text-slate-300 font-medium text-lg">{statusMessage}</p>
           </div>
@@ -241,80 +247,101 @@
         .map(f => f.name) : [];
 
       return (
-        <div class="max-w-md mx-auto w-full flex flex-col justify-between min-h-screen py-4">
+        <div class="max-w-md mx-auto w-full flex flex-col justify-between min-h-screen py-2">
 
-          {/* ==================== 1. HOOFDSCHERM ==================== */}
+          {/* ==================== 1. HERSTELD STARTSCHERM (V28 UI) ==================== */}
           {gameState === 'HOME' && (
             <>
+              {/* Header V28 */}
               <div class="text-center mt-2">
-                <h1 class="text-4xl font-black text-indigo-400 tracking-wider">30 SECONDS</h1>
-                <p class="text-slate-400 text-sm font-semibold mt-1">HEAO '96 EDITIE</p>
+                <div class="inline-block bg-indigo-950/80 border border-indigo-500/30 px-3 py-1 rounded-full text-indigo-300 text-xs font-bold tracking-widest uppercase mb-2">
+                  Reünie Special
+                </div>
+                <h1 class="text-4xl font-black tracking-tight text-white">30 SECONDS</h1>
+                <p class="text-indigo-400 font-bold text-sm tracking-widest uppercase">HEAO '96 EDITIE</p>
               </div>
 
-              {/* Tussenstand op Hoofdscherm */}
-              <div class="grid grid-cols-2 gap-3 my-4">
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center">
-                  <span class="text-xs text-slate-400 font-bold block">TEAM 1</span>
-                  <span class="text-3xl font-black text-indigo-400">{team1Score}</span>
-                </div>
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center">
-                  <span class="text-xs text-slate-400 font-bold block">TEAM 2</span>
-                  <span class="text-3xl font-black text-pink-400">{team2Score}</span>
+              {/* Team Namen Invoer / Stand Blok V28 */}
+              <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 my-2 shadow-xl backdrop-blur">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Teams</h3>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="bg-slate-900/80 p-3 rounded-xl border border-indigo-500/30">
+                    <input 
+                      type="text" 
+                      value={team1Name} 
+                      onChange={(e) => setTeam1Name(e.target.value)}
+                      class="bg-transparent font-bold text-indigo-300 text-sm w-full outline-none border-b border-indigo-500/30 pb-1 mb-1 focus:border-indigo-400"
+                      placeholder="Team 1"
+                    />
+                    <div class="text-2xl font-black text-white">{team1Score} <span class="text-xs text-slate-500 font-normal">ptn</span></div>
+                  </div>
+                  <div class="bg-slate-900/80 p-3 rounded-xl border border-pink-500/30">
+                    <input 
+                      type="text" 
+                      value={team2Name} 
+                      onChange={(e) => setTeam2Name(e.target.value)}
+                      class="bg-transparent font-bold text-pink-300 text-sm w-full outline-none border-b border-pink-500/30 pb-1 mb-1 focus:border-pink-400"
+                      placeholder="Team 2"
+                    />
+                    <div class="text-2xl font-black text-white">{team2Score} <span class="text-xs text-slate-500 font-normal">ptn</span></div>
+                  </div>
                 </div>
               </div>
 
-              {/* Instellingen blok */}
-              <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 my-auto shadow-xl">
-                <h2 class="text-lg font-bold text-white mb-3">Instellingen Spel</h2>
+              {/* Woordenlijsten Selectieblok V28 Integration */}
+              <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 my-2 shadow-xl backdrop-blur">
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Actieve Thema's</h3>
+                  <span class="text-xs text-indigo-400 font-bold bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-800">
+                    {selectedCategoryIds.length} / {manifest.files.length}
+                  </span>
+                </div>
 
                 <button 
                   onClick={() => setIsModalOpen(true)}
-                  class="w-full bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-semibold py-3.5 px-4 rounded-xl border border-slate-600 flex items-center justify-between transition-colors mb-4"
+                  class="w-full bg-slate-700/80 hover:bg-slate-600 active:bg-slate-500 text-white font-semibold py-3 px-4 rounded-xl border border-slate-600/80 flex items-center justify-between transition-all mb-3 shadow-inner"
                 >
-                  <span class="flex items-center gap-2">
-                    <span class="text-xl">📚</span> Woordenlijsten
+                  <span class="flex items-center gap-2 text-sm">
+                    <span>⚙️</span> Woordenlijsten aanpassen
                   </span>
-                  <span class="text-indigo-400 text-sm font-bold">
-                    {selectedCategoryIds.length} van {manifest.files.length} gekozen ➔
-                  </span>
+                  <span class="text-indigo-300 text-xs font-bold">Wijzigen ➔</span>
                 </button>
 
-                <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800">
-                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                    Actieve lijsten:
-                  </span>
+                {/* Overzicht van gekozen categorieën */}
+                <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-800">
                   {activeCategoryNames.length > 0 ? (
                     <div class="flex flex-wrap gap-1.5">
                       {activeCategoryNames.map((name, idx) => (
-                        <span key={idx} class="bg-indigo-900/50 text-indigo-200 border border-indigo-700/50 text-xs px-2.5 py-1 rounded-md font-medium">
+                        <span key={idx} class="bg-indigo-900/40 text-indigo-200 border border-indigo-700/50 text-xs px-2.5 py-1 rounded-md font-medium">
                           {name}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p class="text-xs text-amber-400 font-medium flex items-center gap-1">
-                      ⚠️ Selecteer minimaal 1 woordenlijst om te spelen!
+                    <p class="text-xs text-amber-400 font-medium">
+                      ⚠️ Geen lijsten gekozen! Selecteer minimaal 1 lijst.
                     </p>
                   )}
                 </div>
               </div>
 
-              <div class="mb-2">
+              {/* Startknop V28 */}
+              <div class="mt-auto mb-2">
                 <button 
                   onClick={handleStartGame}
                   disabled={selectedCategoryIds.length === 0}
-                  class={`w-full py-4 rounded-xl font-black text-xl shadow-lg transition-all ${
+                  class={`w-full py-4 rounded-xl font-black text-xl shadow-xl transition-all ${
                     selectedCategoryIds.length > 0 
                       ? "bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white shadow-indigo-600/30" 
                       : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
                   }`}
                 >
-                  START SPEL
+                  START NIEUWE RONDE
                 </button>
 
-                <div class="text-center mt-4">
-                  <p class="text-[11px] text-slate-500 font-mono">
-                    App {APP_VERSION} • Woordenlijsten v{manifest ? manifest.wordsVersion : '1.1'}
+                <div class="text-center mt-3">
+                  <p class="text-[10px] text-slate-500 font-mono">
+                    {APP_VERSION} • Woordenlijsten v{manifest ? manifest.wordsVersion : '1.1'}
                   </p>
                 </div>
               </div>
@@ -325,20 +352,17 @@
           {gameState === 'WHEEL' && (
             <div class="flex flex-col justify-between h-full py-2">
               <div class="text-center">
-                <span class={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full ${
-                  activeTeam === 1 ? 'bg-indigo-900/80 text-indigo-300 border border-indigo-700' : 'bg-pink-900/80 text-pink-300 border border-pink-700'
+                <span class={`text-xs font-bold uppercase tracking-widest px-3.5 py-1 rounded-full ${
+                  activeTeam === 1 ? 'bg-indigo-950 text-indigo-300 border border-indigo-700' : 'bg-pink-950 text-pink-300 border border-pink-700'
                 }`}>
-                  Aan de beurt: Team {activeTeam}
+                  Aan de beurt: {activeTeam === 1 ? team1Name : team2Name}
                 </span>
                 <h2 class="text-2xl font-black mt-3">Draai voor je Handicap</h2>
               </div>
 
-              {/* Visueel Rad */}
               <div class="relative w-64 h-64 mx-auto my-auto flex items-center justify-center">
-                {/* Pointer */}
                 <div class="absolute -top-3 z-20 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-amber-400 drop-shadow-md"></div>
                 
-                {/* Draaiende Cirkel */}
                 <div 
                   class="w-full h-full rounded-full border-4 border-slate-700 relative overflow-hidden shadow-2xl wheel-rotate"
                   style={{ transform: `rotate(${wheelRotation}deg)` }}
@@ -350,7 +374,6 @@
                 </div>
               </div>
 
-              {/* Resultaat & Volgende Knop */}
               <div class="space-y-3">
                 {wheelHandicap !== null && (
                   <div class="bg-slate-800 border border-indigo-500/50 p-3 rounded-xl text-center animate-bounce">
@@ -382,10 +405,9 @@
           {/* ==================== 3. KAART & TIMER SCHERM ==================== */}
           {gameState === 'CARD' && (
             <div class="flex flex-col justify-between h-full">
-              {/* Top Bar: Timer */}
               <div class="flex justify-between items-center bg-slate-800 border border-slate-700 p-3 rounded-xl">
                 <div>
-                  <span class="text-xs text-slate-400 font-bold uppercase block">Team {activeTeam}</span>
+                  <span class="text-xs text-slate-400 font-bold uppercase block">{activeTeam === 1 ? team1Name : team2Name}</span>
                   <span class="text-xs text-amber-400 font-semibold">Handicap: -{wheelHandicap}</span>
                 </div>
                 <div class={`text-3xl font-black font-mono px-4 py-1 rounded-lg ${
@@ -395,7 +417,6 @@
                 </div>
               </div>
 
-              {/* Het Woordenkaartje */}
               <div class="bg-slate-800 border-2 border-indigo-500/40 rounded-2xl p-4 my-auto shadow-2xl space-y-2.5">
                 {currentWords.map((word, idx) => (
                   <div 
@@ -417,7 +438,6 @@
                 ))}
               </div>
 
-              {/* Afronden Knop */}
               <button 
                 onClick={finishRound}
                 class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-xl text-xl shadow-lg active:scale-95 transition-all"
@@ -432,7 +452,7 @@
             <div class="flex flex-col justify-between h-full py-4 text-center">
               <div>
                 <h2 class="text-3xl font-black text-indigo-400">RONDE AFGELOPEN!</h2>
-                <p class="text-slate-400 text-sm font-semibold mt-1">Resultaat voor Team {activeTeam}</p>
+                <p class="text-slate-400 text-sm font-semibold mt-1">Resultaat voor {activeTeam === 1 ? team1Name : team2Name}</p>
               </div>
 
               <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 my-auto space-y-4">
@@ -453,16 +473,15 @@
                   </div>
                 </div>
 
-                {/* Totale Stand */}
                 <div>
                   <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-2">Totale Tussenstand</span>
                   <div class="grid grid-cols-2 gap-3">
                     <div class={`p-3 rounded-xl border ${activeTeam === 1 ? 'bg-indigo-950/60 border-indigo-500' : 'bg-slate-900 border-slate-800'}`}>
-                      <span class="text-xs text-slate-400 font-bold block">TEAM 1</span>
+                      <span class="text-xs text-slate-400 font-bold block">{team1Name}</span>
                       <span class="text-3xl font-black text-indigo-400">{team1Score}</span>
                     </div>
                     <div class={`p-3 rounded-xl border ${activeTeam === 2 ? 'bg-pink-950/60 border-pink-500' : 'bg-slate-900 border-slate-800'}`}>
-                      <span class="text-xs text-slate-400 font-bold block">TEAM 2</span>
+                      <span class="text-xs text-slate-400 font-bold block">{team2Name}</span>
                       <span class="text-3xl font-black text-pink-400">{team2Score}</span>
                     </div>
                   </div>
@@ -473,7 +492,7 @@
                 onClick={nextTurn}
                 class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl text-xl shadow-lg active:scale-95 transition-all"
               >
-                VOLGENDE BEURT (TEAM {activeTeam === 1 ? 2 : 1}) ➔
+                VOLGENDE BEURT ({activeTeam === 1 ? team2Name : team1Name}) ➔
               </button>
             </div>
           )}
