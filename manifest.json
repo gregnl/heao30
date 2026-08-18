@@ -15,9 +15,15 @@
   "wordsVersion": 1.1,
   "files": [
     { "id": "heao", "name": "HEAO '96", "file": "./words-heao.json" },
-    { "id": "disney", "name": "Disney", "file": "./words-disney.json" },
     { "id": "easy", "name": "Makkelijk", "file": "./words-easy.json" },
     { "id": "medium", "name": "Medium", "file": "./words-medium.json" },
-    { "id": "hard", "name": "Moeilijk", "file": "./words-hard.json" }
+    { "id": "hard", "name": "Moeilijk", "file": "./words-hard.json" },
+    { "id": "disney", "name": "Disney", "file": "./words-accountancy.json" },
+    { "id": "disney", "name": "Disney", "file": "./words-dieren.json" },
+    { "id": "disney", "name": "Disney", "file": "./words-disney.json" },
+    { "id": "disney", "name": "Disney", "file": "./words-muziek.json" },
+    { "id": "disney", "name": "Disney", "file": "./words-onderwijs.json" },
+    { "id": "disney", "name": "Disney", "file": "./words-techniek.json" },
+    { "id": "disney", "name": "Disney", "file": "./words-trading-crypto.json" }
   ]
 }
