@@ -7,16 +7,16 @@
   "theme_color": "#4f46e5",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "./logo.png",
       "sizes": "192x192",
       "type": "image/png"
     }
   ],
   "wordsVersion": 1.1,
   "files": [
-    { "id": "heao", "name": "HEAO '96", "file": "words-heao.json" },
-    { "id": "easy", "name": "Makkelijk", "file": "words-easy.json" },
-    { "id": "medium", "name": "Medium", "file": "words-medium.json" },
-    { "id": "hard", "name": "Moeilijk", "file": "words-hard.json" }
+    { "id": "heao", "name": "HEAO '96", "file": "./words-heao.json" },
+    { "id": "easy", "name": "Makkelijk", "file": "./words-easy.json" },
+    { "id": "medium", "name": "Medium", "file": "./words-medium.json" },
+    { "id": "hard", "name": "Moeilijk", "file": "./words-hard.json" }
   ]
 }
