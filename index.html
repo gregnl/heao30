@@ -81,7 +81,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.2.0";
+        const APP_VERSION = "1.3.0";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
@@ -485,7 +485,6 @@
             const [timeLeft, setTimeLeft] = useState(30);
             const [isTimerRunning, setIsTimerRunning] = useState(false);
             const [usedWords, setUsedWords] = useState([]);
-            const [lastTurnScore, setLastTurnScore] = useState(0);
 
             useEffect(() => {
                 if (darkMode) {
@@ -607,7 +606,7 @@
                 } else if (timeLeft === 0 && isTimerRunning) {
                     setIsTimerRunning(false);
                     playEndSound();
-                    handleFinishTurn(true);
+                    handleFinishTurn();
                 }
                 return () => clearInterval(interval);
             }, [isTimerRunning, timeLeft]);
@@ -693,48 +692,35 @@
                 setCheckedWords(next);
             };
 
-            const handleFinishTurn = (fromTimeout = false) => {
+            const handleFinishTurn = () => {
                 setIsTimerRunning(false);
-                
-                const score = checkedWords.filter(Boolean).length;
-                setLastTurnScore(score);
+                setScreen('turn_summary');
+            };
 
-                let isWinner = false;
-                
-                setTeams(prevTeams => {
-                    return prevTeams.map((team, idx) => {
-                        if (idx === currentTeamIdx) {
-                            const newScore = team.score + score;
-                            if (newScore >= targetScore) {
-                                isWinner = true;
-                            }
-                            return { ...team, score: newScore };
-                        }
-                        return team;
-                    });
-                });
+            const handleConfirmTurnAndNext = () => {
+                const roundScore = checkedWords.filter(Boolean).length;
+                const updatedScore = teams[currentTeamIdx].score + roundScore;
 
-                const currentTeamScore = teams[currentTeamIdx].score + score;
+                setTeams(prevTeams => prevTeams.map((team, idx) => 
+                    idx === currentTeamIdx ? { ...team, score: updatedScore } : team
+                ));
 
-                if (currentTeamScore >= targetScore || isWinner) {
+                if (updatedScore >= targetScore) {
                     setScreen('game_over');
                 } else {
-                    setScreen('turn_summary');
+                    setCurrentTeamIdx((currentTeamIdx + 1) % teams.length);
+                    handleStartTurn();
                 }
             };
 
-            const handleNextTeam = () => {
-                setCurrentTeamIdx((currentTeamIdx + 1) % teams.length);
-                handleStartTurn();
-            };
-
-            // Namen van geselecteerde categorieën ophalen voor het kleine overzicht
             const selectedCategoryNames = manifestCategories
                 .filter(cat => {
                     const file = typeof cat === 'object' ? cat.file : `${cat}.json`;
                     return selectedCategoryFiles.includes(file);
                 })
                 .map(cat => typeof cat === 'object' ? cat.name : cat);
+
+            const currentTurnScore = checkedWords.filter(Boolean).length;
 
             return (
                 <div class="relative max-w-md mx-auto w-full h-full flex flex-col p-4 justify-between bg-slate-900 text-slate-100 transition-colors">
@@ -856,7 +842,6 @@
                                         </span>
                                     </button>
 
-                                    {/* Klein overzicht onder de knop */}
                                     <div class="bg-slate-900/80 rounded-lg p-2.5 border border-slate-700/80">
                                         <p class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">
                                             Actief voor deze ronde:
@@ -875,7 +860,7 @@
                                     </div>
                                 </div>
 
-                                {/* MODAL / POPUP VOOR WOORDENLIJSTEN */}
+                                {/* MODAL VOOR WOORDENLIJSTEN */}
                                 {isCategoryModalOpen && (
                                     <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
                                         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm p-5 shadow-2xl flex flex-col max-h-[85vh]">
@@ -889,7 +874,6 @@
                                                 </button>
                                             </div>
 
-                                            {/* Lijst van woordenlijsten met checkbox rechts */}
                                             <div class="flex-1 overflow-y-auto space-y-2 pr-1 my-2">
                                                 {manifestCategories.map((cat, idx) => {
                                                     const file = typeof cat === 'object' ? cat.file : `${cat}.json`;
@@ -917,7 +901,6 @@
                                                 })}
                                             </div>
 
-                                            {/* OK knop onderaan */}
                                             <button
                                                 onClick={() => setIsCategoryModalOpen(false)}
                                                 class="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-lg shadow-lg active:scale-95 transition"
@@ -1029,43 +1012,71 @@
                             </div>
 
                             <button
-                                onClick={() => handleFinishTurn(false)}
+                                onClick={handleFinishTurn}
                                 class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold py-4 rounded-xl border border-slate-600 text-lg shrink-0"
                             >
-                                Ronde Nu Afronden ➔
+                                Ronde Afronden & Controleren ➔
                             </button>
                         </div>
                     )}
 
-                    {/* SCREEN: TURN SUMMARY */}
+                    {/* SCREEN: TURN SUMMARY (Aangepast met correctiemogelijkheid) */}
                     {screen === 'turn_summary' && (
-                        <div class="flex-1 flex flex-col justify-between py-2">
-                            <div class="text-center my-auto space-y-5">
-                                <div class="inline-block bg-rose-950/60 border border-rose-800 p-4 rounded-full">
-                                    <span class="text-5xl">🎉</span>
-                                </div>
-                                <h2 class="text-3xl font-black text-slate-100">Ronde Afgelopen!</h2>
-                                <p class="text-slate-200 text-lg font-bold">
-                                    <span class="font-black text-rose-400">{teams[currentTeamIdx].name}</span> heeft <span class="font-black text-white text-3xl">{lastTurnScore}</span> punten gescoord!
+                        <div class="flex-1 flex flex-col justify-between py-1 overflow-hidden">
+                            <div class="text-center shrink-0 mb-2">
+                                <h2 class="text-2xl font-black text-white">Ronde Afgelopen!</h2>
+                                <p class="text-sm font-bold text-slate-300">
+                                    <span class="text-rose-400 font-extrabold">{teams[currentTeamIdx].name}</span> scoort: <span class="font-black text-emerald-400 text-2xl">{currentTurnScore}</span> ptn
                                 </p>
-
-                                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 text-left space-y-2.5 mt-2">
-                                    <h3 class="text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Tussenstand</h3>
-                                    {teams.map((t, idx) => (
-                                        <div key={t.id} class={`flex justify-between py-2 px-3.5 rounded-lg text-lg ${idx === currentTeamIdx ? 'bg-slate-700/60 font-black text-white' : 'text-slate-300 font-bold'}`}>
-                                            <span>{t.name}</span>
-                                            <span class="font-mono font-black text-rose-400">{t.score} ptn</span>
-                                        </div>
-                                    ))}
-                                </div>
+                                <p class="text-xs text-amber-400 font-bold mt-1">
+                                    ✏️ Controleer/corrigeer de antwoorden hieronder:
+                                </p>
                             </div>
 
-                            <button
-                                onClick={handleNextTeam}
-                                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-xl text-xl text-center shadow-lg active:scale-95 transition shrink-0"
-                            >
-                                Volgende Team Aan De Beurt ➔
-                            </button>
+                            {/* Lijst om antwoorden alsnog aan of uit te vinken */}
+                            <div class="space-y-2 overflow-y-auto my-auto py-1 pr-1">
+                                {currentWords.map((word, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => toggleCheckWord(idx)}
+                                        class={`w-full p-3 rounded-xl text-left font-black text-lg transition flex justify-between items-center border ${
+                                            checkedWords[idx]
+                                                ? 'bg-emerald-950/80 border-emerald-500 text-emerald-100 shadow-sm'
+                                                : 'bg-slate-800/80 border-slate-700 text-slate-300'
+                                        }`}
+                                    >
+                                        <span class="leading-tight">{word}</span>
+                                        <span class={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-black shrink-0 ml-2 ${
+                                            checkedWords[idx] ? 'bg-emerald-500 text-slate-950' : 'border-2 border-slate-600'
+                                        }`}>
+                                            {checkedWords[idx] ? '✓' : ''}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Tussenstand & Volgende knop */}
+                            <div class="shrink-0 space-y-2.5 mt-2">
+                                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 text-left space-y-1.5">
+                                    <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Tussenstand na deze ronde</h3>
+                                    {teams.map((t, idx) => {
+                                        const total = idx === currentTeamIdx ? t.score + currentTurnScore : t.score;
+                                        return (
+                                            <div key={t.id} class={`flex justify-between py-1 px-3 rounded-lg text-base ${idx === currentTeamIdx ? 'bg-slate-700/80 font-black text-white' : 'text-slate-300 font-bold'}`}>
+                                                <span>{t.name}</span>
+                                                <span class="font-mono font-black text-rose-400">{total} ptn</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <button
+                                    onClick={handleConfirmTurnAndNext}
+                                    class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-3.5 rounded-xl text-lg text-center shadow-lg active:scale-95 transition"
+                                >
+                                    Bevestig & Volgende Team ➔
+                                </button>
+                            </div>
                         </div>
                     )}
 
