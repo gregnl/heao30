@@ -1,0 +1,22 @@
+{
+  "name": "30 Seconds - HEAO '96 Editie",
+  "short_name": "HEAO30",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "wordsVersion": 1.1,
+  "files": [
+    { "id": "heao", "name": "HEAO '96", "file": "words-heao.json" },
+    { "id": "easy", "name": "Makkelijk", "file": "words-easy.json" },
+    { "id": "medium", "name": "Medium", "file": "words-medium.json" },
+    { "id": "hard", "name": "Moeilijk", "file": "words-hard.json" }
+  ]
+}
