@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>30 Seconds - HEAO '96 Edition</title>
     
-    <!-- Favicons & App Icons (Relatief voor GitHub Pages) -->
+    <!-- Favicons & App Icons -->
     <link rel="icon" type="image/png" href="./logo.png">
     <link rel="apple-touch-icon" href="./logo.png">
 
@@ -44,7 +44,6 @@
             to { opacity: 0; visibility: hidden; }
         }
 
-        /* Vurige Opzwel- en Explosie-animaties */
         @keyframes swell {
             0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
             50% { transform: scale(1.25) rotate(15deg); filter: brightness(1.8) drop-shadow(0 0 25px #f97316); }
@@ -62,7 +61,6 @@
             animation: explodeParticle 0.8s ease-out forwards;
         }
 
-        /* Screen Shake effect bij explosie */
         @keyframes screenShake {
             0% { transform: translate(0, 0) rotate(0deg); }
             20% { transform: translate(-8px, 6px) rotate(-1deg); }
@@ -83,14 +81,13 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.1.0";
+        const APP_VERSION = "1.2.0";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
             '#7c3aed', '#db2777', '#0891b2', '#4338ca'
         ];
 
-        // Default Teams ingesteld op Oliebollen en Lachebekken
         const DEFAULT_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
             { id: 2, name: 'Lachebekken', score: 0 }
@@ -467,7 +464,6 @@
             const [timerLength, setTimerLength] = useState(30);
             const [targetScore, setTargetScore] = useState(30);
             
-            // Standaard Oliebollen & Lachebekken instellen
             const [teams, setTeams] = useState(() => {
                 const saved = localStorage.getItem('heao96_teams');
                 if (saved) {
@@ -478,10 +474,9 @@
                 return DEFAULT_TEAMS;
             });
 
-            // State voor de lijst met beschikbare bestanden/categorieën uit manifest.json
             const [manifestCategories, setManifestCategories] = useState([]);
             const [selectedCategoryFiles, setSelectedCategoryFiles] = useState([]);
-            const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+            const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
             const [wordList, setWordList] = useState([]);
             const [currentTeamIdx, setCurrentTeamIdx] = useState(0);
@@ -502,7 +497,6 @@
                 }
             }, [darkMode]);
 
-            // 1. manifest.json uitlezen (specifiek geënt op data.files met relatieve paden)
             useEffect(() => {
                 const fetchManifest = async () => {
                     try {
@@ -513,18 +507,16 @@
                             
                             setManifestCategories(categories);
                             
-                            // Standaard alle bestanden uit de 'files' array selecteren
                             const allFiles = categories.map(c => typeof c === 'object' ? c.file : `${c}.json`);
                             setSelectedCategoryFiles(allFiles);
                         }
                     } catch (e) {
-                        console.log("Kon manifest.json niet laden, gebruik fallback.");
+                        console.log("Kon manifest.json niet laden.");
                     }
                 };
                 fetchManifest();
             }, []);
 
-            // 2. Dynamisch de geselecteerde JSON bestanden laden vanuit de GitHub root
             useEffect(() => {
                 const fetchSelectedWords = async () => {
                     if (selectedCategoryFiles.length === 0) {
@@ -535,7 +527,6 @@
                     try {
                         const timestamp = Date.now();
                         const promises = selectedCategoryFiles.map(file => {
-                            // Garandeer dat elk bestand netjes via ./ wordt opgevraagd
                             const path = file.startsWith('./') ? file : `./${file}`;
                             return fetch(`${path}?t=${timestamp}`)
                                 .then(res => res.ok ? res.json() : [])
@@ -737,6 +728,14 @@
                 handleStartTurn();
             };
 
+            // Namen van geselecteerde categorieën ophalen voor het kleine overzicht
+            const selectedCategoryNames = manifestCategories
+                .filter(cat => {
+                    const file = typeof cat === 'object' ? cat.file : `${cat}.json`;
+                    return selectedCategoryFiles.includes(file);
+                })
+                .map(cat => typeof cat === 'object' ? cat.name : cat);
+
             return (
                 <div class="relative max-w-md mx-auto w-full h-full flex flex-col p-4 justify-between bg-slate-900 text-slate-100 transition-colors">
                     
@@ -844,44 +843,90 @@
                                     </button>
                                 </div>
 
-                                {/* 2. Woordenlijsten Selectie (Uitklapbare Knop) */}
-                                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50">
-                                    <h2 class="text-base font-extrabold text-rose-400 uppercase tracking-wider mb-3">Woordenlijsten</h2>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                                        class="w-full bg-slate-900 border border-slate-700 text-slate-100 font-bold py-3 px-4 rounded-xl flex justify-between items-center text-left hover:border-slate-500 transition"
+                                {/* 2. Woordenlijsten Knop & Klein Overzicht */}
+                                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50 space-y-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCategoryModalOpen(true)}
+                                        class="w-full bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3.5 px-4 rounded-xl flex justify-between items-center text-lg shadow-md active:scale-98 transition"
                                     >
-                                        <span>
-                                            {selectedCategoryFiles.length === 0 
-                                                ? '⚠️ Geen lijst geselecteerd' 
-                                                : `${selectedCategoryFiles.length} categorieën geselecteerd`}
+                                        <span>📚 Woordenlijsten</span>
+                                        <span class="bg-rose-950/60 text-rose-200 text-xs px-2.5 py-1 rounded-md font-bold border border-rose-700">
+                                            {selectedCategoryFiles.length} actief
                                         </span>
-                                        <span class="text-slate-400">{isCategoryDropdownOpen ? '▲' : '▼'}</span>
                                     </button>
 
-                                    {isCategoryDropdownOpen && (
-                                        <div class="mt-3 bg-slate-900/90 border border-slate-700 rounded-xl p-3 space-y-2">
-                                            {manifestCategories.map((cat, idx) => {
-                                                const file = typeof cat === 'object' ? cat.file : `${cat}.json`;
-                                                const name = typeof cat === 'object' ? cat.name : cat;
-                                                const isChecked = selectedCategoryFiles.includes(file);
-
-                                                return (
-                                                    <label key={idx} class="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-800 cursor-pointer text-slate-200">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            checked={isChecked}
-                                                            onChange={() => toggleCategoryFile(file)}
-                                                            class="w-5 h-5 accent-rose-600 rounded cursor-pointer"
-                                                        />
-                                                        <span class="font-bold text-sm">{name}</span>
-                                                    </label>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                                    {/* Klein overzicht onder de knop */}
+                                    <div class="bg-slate-900/80 rounded-lg p-2.5 border border-slate-700/80">
+                                        <p class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">
+                                            Actief voor deze ronde:
+                                        </p>
+                                        {selectedCategoryNames.length > 0 ? (
+                                            <div class="flex flex-wrap gap-1.5">
+                                                {selectedCategoryNames.map((name, idx) => (
+                                                    <span key={idx} class="bg-slate-800 text-slate-200 border border-slate-700 text-xs font-bold px-2 py-0.5 rounded-md">
+                                                        {name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p class="text-xs font-bold text-amber-500">⚠️ Geen woordenlijst geselecteerd!</p>
+                                        )}
+                                    </div>
                                 </div>
+
+                                {/* MODAL / POPUP VOOR WOORDENLIJSTEN */}
+                                {isCategoryModalOpen && (
+                                    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                                        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm p-5 shadow-2xl flex flex-col max-h-[85vh]">
+                                            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                                                <h3 class="text-xl font-black text-white">Selecteer Woordenlijsten</h3>
+                                                <button 
+                                                    onClick={() => setIsCategoryModalOpen(false)}
+                                                    class="text-slate-400 hover:text-white text-xl font-black p-1"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+
+                                            {/* Lijst van woordenlijsten met checkbox rechts */}
+                                            <div class="flex-1 overflow-y-auto space-y-2 pr-1 my-2">
+                                                {manifestCategories.map((cat, idx) => {
+                                                    const file = typeof cat === 'object' ? cat.file : `${cat}.json`;
+                                                    const name = typeof cat === 'object' ? cat.name : cat;
+                                                    const isChecked = selectedCategoryFiles.includes(file);
+
+                                                    return (
+                                                        <label 
+                                                            key={idx} 
+                                                            onClick={() => toggleCategoryFile(file)}
+                                                            class={`flex justify-between items-center p-3 rounded-xl border cursor-pointer transition select-none ${
+                                                                isChecked 
+                                                                    ? 'bg-rose-950/40 border-rose-600/80 text-white font-extrabold' 
+                                                                    : 'bg-slate-900/60 border-slate-700/60 text-slate-300 font-semibold hover:bg-slate-900'
+                                                            }`}
+                                                        >
+                                                            <span class="text-base">{name}</span>
+                                                            <div class={`w-6 h-6 rounded-md flex items-center justify-center border transition ${
+                                                                isChecked ? 'bg-rose-600 border-rose-500 text-white' : 'border-slate-600 bg-slate-800'
+                                                            }`}>
+                                                                {isChecked && <span class="text-sm font-black">✓</span>}
+                                                            </div>
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* OK knop onderaan */}
+                                            <button
+                                                onClick={() => setIsCategoryModalOpen(false)}
+                                                class="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl text-lg shadow-lg active:scale-95 transition"
+                                            >
+                                                OK
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* 3. Spelinstellingen */}
                                 <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/50 space-y-4">
