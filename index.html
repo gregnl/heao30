@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
   
-  <!-- Apple / PWA Web App & Splash Screen Tags -->
+  <!-- Apple / PWA Web App Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="30 Seconds">
@@ -28,6 +28,15 @@
     .wheel-rotate { 
       transition: transform 3.5s cubic-bezier(0.15, 0.90, 0.2, 1.00); 
     }
+    /* Splash screen animatie */
+    @keyframes fadeOut {
+      0% { opacity: 1; visibility: visible; }
+      80% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    .splash-overlay {
+      animation: fadeOut 2.2s forwards ease-in-out;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen font-sans flex flex-col justify-between p-4">
@@ -37,10 +46,9 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const APP_VERSION = "v28.4 (Standalone / Geen Manifest)";
+    const APP_VERSION = "v22.0 (Restored Classic)";
 
-    // ==================== WOORDENLIJSTEN / THEMA'S ====================
-    // Voeg hier eenvoudig extra thema's of woorden aan toe
+    // ==================== WOORDENLIJSTEN ====================
     const GAME_DATA = [
       {
         id: "heao96",
@@ -71,30 +79,39 @@
     ];
 
     function App() {
+      // Splash screen state
+      const [showSplash, setShowSplash] = useState(true);
+
       // Game States: 'HOME', 'WHEEL', 'CARD', 'SCORE'
       const [gameState, setGameState] = useState('HOME');
 
-      // Categorieën selectie (Standaard alles geselecteerd)
+      // Categorieën selectie
       const [selectedCategoryIds, setSelectedCategoryIds] = useState(GAME_DATA.map(c => c.id));
       const [isModalOpen, setIsModalOpen] = useState(false);
 
-      // Team & Score status
-      const [team1Name, setTeam1Name] = useState("Team 1");
-      const [team2Name, setTeam2Name] = useState("Team 2");
+      // Vertrouwde Teams: Oliebollen & Lachebekken
+      const [team1Name, setTeam1Name] = useState("Oliebollen 🧆");
+      const [team2Name, setTeam2Name] = useState("Lachebekken 😄");
       const [team1Score, setTeam1Score] = useState(0);
       const [team2Score, setTeam2Score] = useState(0);
       const [activeTeam, setActiveTeam] = useState(1);
 
-      // Rad van Fortuin status
+      // Rad van Fortuin
       const [wheelHandicap, setWheelHandicap] = useState(null);
       const [isSpinning, setIsSpinning] = useState(false);
       const [wheelRotation, setWheelRotation] = useState(0);
 
-      // Kaart & Timer status
+      // Kaart & Timer
       const [currentWords, setCurrentWords] = useState([]);
       const [checkedWords, setCheckedWords] = useState([false, false, false, false, false]);
       const [timeLeft, setTimeLeft] = useState(30);
       const [timerActive, setTimerActive] = useState(false);
+
+      // Timer verbergen van Splash Screen na 2 seconden
+      useEffect(() => {
+        const timer = setTimeout(() => setShowSplash(false), 2200);
+        return () => clearTimeout(timer);
+      }, []);
 
       // Geluidssignaal via Web Audio API
       const playBeep = (freq = 600, duration = 0.15) => {
@@ -114,7 +131,7 @@
         } catch(e) {}
       };
 
-      // Timer verloop
+      // Timer logica
       useEffect(() => {
         let interval = null;
         if (timerActive && timeLeft > 0) {
@@ -132,7 +149,6 @@
         return () => clearInterval(interval);
       }, [timerActive, timeLeft]);
 
-      // Categorie beheer
       const toggleCategory = (id) => {
         if (selectedCategoryIds.includes(id)) {
           setSelectedCategoryIds(selectedCategoryIds.filter(item => item !== id));
@@ -144,7 +160,6 @@
       const selectAll = () => setSelectedCategoryIds(GAME_DATA.map(f => f.id));
       const selectNone = () => setSelectedCategoryIds([]);
 
-      // Spelacties
       const handleStartGame = () => {
         setWheelHandicap(null);
         setGameState('WHEEL');
@@ -154,7 +169,7 @@
         if (isSpinning) return;
         setIsSpinning(true);
 
-        const outcome = Math.floor(Math.random() * 3); // 0, 1 of 2
+        const outcome = Math.floor(Math.random() * 3);
         const fullSpins = 5 * 360;
         const segmentDegrees = 120;
         const targetDeg = fullSpins + (outcome * segmentDegrees) + 60;
@@ -228,7 +243,26 @@
         .map(f => f.name);
 
       return (
-        <div class="max-w-md mx-auto w-full flex flex-col justify-between min-h-screen py-2">
+        <div class="max-w-md mx-auto w-full flex flex-col justify-between min-h-screen py-2 relative">
+
+          {/* ==================== SPLASH SCREEN OVERLAY ==================== */}
+          {showSplash && (
+            <div class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center p-6 splash-overlay pointer-events-none">
+              <img 
+                src="logo.png" 
+                alt="30 Seconds Logo" 
+                class="w-40 h-40 object-contain mb-4 drop-shadow-[0_10px_25px_rgba(99,102,241,0.5)] animate-pulse"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <h1 class="text-4xl font-black tracking-tight text-white mb-1">30 SECONDS</h1>
+              <p class="text-indigo-400 font-bold tracking-widest uppercase text-sm">HEAO '96 EDITIE</p>
+              <div class="mt-8 flex gap-1.5">
+                <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+              </div>
+            </div>
+          )}
 
           {/* ==================== 1. STARTSCHERM ==================== */}
           {gameState === 'HOME' && (
@@ -237,7 +271,7 @@
                 <img 
                   src="logo.png" 
                   alt="30 Seconds Logo" 
-                  class="w-24 h-24 object-contain mb-2 drop-shadow-lg"
+                  class="w-28 h-28 object-contain mb-2 drop-shadow-xl"
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
                 
@@ -248,7 +282,7 @@
                 <p class="text-indigo-400 font-bold text-sm tracking-widest uppercase">HEAO '96 EDITIE</p>
               </div>
 
-              {/* Team Invoer / Stand */}
+              {/* Team Invoer / Stand (Oliebollen & Lachebekken) */}
               <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 my-2 shadow-xl backdrop-blur">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Teams & Stand</h3>
                 <div class="grid grid-cols-2 gap-3">
@@ -258,7 +292,6 @@
                       value={team1Name} 
                       onChange={(e) => setTeam1Name(e.target.value)}
                       class="bg-transparent font-bold text-indigo-300 text-sm w-full outline-none border-b border-indigo-500/30 pb-1 mb-1 focus:border-indigo-400"
-                      placeholder="Team 1"
                     />
                     <div class="text-2xl font-black text-white">{team1Score} <span class="text-xs text-slate-500 font-normal">ptn</span></div>
                   </div>
@@ -268,7 +301,6 @@
                       value={team2Name} 
                       onChange={(e) => setTeam2Name(e.target.value)}
                       class="bg-transparent font-bold text-pink-300 text-sm w-full outline-none border-b border-pink-500/30 pb-1 mb-1 focus:border-pink-400"
-                      placeholder="Team 2"
                     />
                     <div class="text-2xl font-black text-white">{team2Score} <span class="text-xs text-slate-500 font-normal">ptn</span></div>
                   </div>
