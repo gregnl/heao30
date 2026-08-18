@@ -83,7 +83,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.0.24";
+        const APP_VERSION = "1.0.25";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
@@ -499,24 +499,41 @@
                 }
             }, [darkMode]);
 
+            // Laden van de 4 losse categorieën van GitHub
             useEffect(() => {
-                const fetchGitHubWords = async () => {
+                const fetchGitHubCategories = async () => {
+                    const categoryFiles = [
+                        'words-heao.json',
+                        'words-algemeen.json',
+                        'words-1996.json',
+                        'words-muziek.json'
+                    ];
+
                     try {
-                        const response = await fetch(`https://gregnl.github.io/heao30/heao96_30seconds_words.json?t=${Date.now()}`);
-                        if (response.ok) {
-                            const remoteWords = await response.json();
-                            if (Array.isArray(remoteWords) && remoteWords.length > 0) {
-                                const sortedRemote = sortAlphabetically(remoteWords);
-                                setWordList(sortedRemote);
-                                localStorage.setItem('heao96_words', JSON.stringify(sortedRemote));
-                            }
+                        const timestamp = Date.now();
+                        const fetchPromises = categoryFiles.map(file => 
+                            fetch(`https://gregnl.github.io/heao30/${file}?t=${timestamp}`)
+                                .then(res => res.ok ? res.json() : [])
+                                .catch(() => [])
+                        );
+
+                        const results = await Promise.all(fetchPromises);
+                        const combinedWords = results.flat();
+
+                        if (combinedWords.length > 0) {
+                            // Dubbele woorden filteren
+                            const uniqueWords = Array.from(new Set(combinedWords));
+                            const sortedWords = sortAlphabetically(uniqueWords);
+                            
+                            setWordList(sortedWords);
+                            localStorage.setItem('heao96_words', JSON.stringify(sortedWords));
                         }
                     } catch (error) {
-                        console.log("Offline of GitHub onbereikbaar.");
+                        console.log("Offline of categorieën laden op GitHub mislukt.");
                     }
                 };
 
-                fetchGitHubWords();
+                fetchGitHubCategories();
             }, []);
 
             const handleSplashClick = () => {
