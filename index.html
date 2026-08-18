@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>30 Seconds - HEAO '96 Edition</title>
     
-    <!-- Favicons & App Icons -->
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
+    <!-- Favicons & App Icons (Relatief voor GitHub Pages) -->
+    <link rel="icon" type="image/png" href="./logo.png">
+    <link rel="apple-touch-icon" href="./logo.png">
 
     <!-- PWA / Standalone App meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,7 +16,7 @@
     <meta name="application-name" content="HEAO-30">
 
     <!-- Web App Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -83,14 +83,14 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const APP_VERSION = "1.0.26";
+        const APP_VERSION = "1.1.0";
 
         const TEAM_COLORS = [
             '#e11d48', '#2563eb', '#059669', '#d97706', 
             '#7c3aed', '#db2777', '#0891b2', '#4338ca'
         ];
 
-        // 1. Default Teams ingesteld op Oliebollen en Lachebekken
+        // Default Teams ingesteld op Oliebollen en Lachebekken
         const DEFAULT_TEAMS = [
             { id: 1, name: 'Oliebollen', score: 0 },
             { id: 2, name: 'Lachebekken', score: 0 }
@@ -502,22 +502,18 @@
                 }
             }, [darkMode]);
 
-            // 2. manifest.json uitlezen om de beschikbare categorieën op te halen
+            // 1. manifest.json uitlezen (specifiek geënt op data.files met relatieve paden)
             useEffect(() => {
                 const fetchManifest = async () => {
                     try {
-                        const res = await fetch(`manifest.json?t=${Date.now()}`);
+                        const res = await fetch(`./manifest.json?t=${Date.now()}`);
                         if (res.ok) {
                             const data = await res.json();
-                            const categories = data.wordlists || data.categories || [
-                                { id: 'heao', name: 'HEAO '96', file: 'words-heao.json' },
-                                { id: 'algemeen', name: 'Algemeen', file: 'words-algemeen.json' },
-                                { id: '1996', name: 'Jaar 1996', file: 'words-1996.json' },
-                                { id: 'muziek', name: 'Muziek', file: 'words-muziek.json' }
-                            ];
+                            const categories = data.files || data.wordlists || data.categories || [];
                             
                             setManifestCategories(categories);
-                            // Standaard alle bestanden selecteren
+                            
+                            // Standaard alle bestanden uit de 'files' array selecteren
                             const allFiles = categories.map(c => typeof c === 'object' ? c.file : `${c}.json`);
                             setSelectedCategoryFiles(allFiles);
                         }
@@ -528,7 +524,7 @@
                 fetchManifest();
             }, []);
 
-            // 3. Dynamisch de geselecteerde JSON bestanden laden van GitHub/Server
+            // 2. Dynamisch de geselecteerde JSON bestanden laden vanuit de GitHub root
             useEffect(() => {
                 const fetchSelectedWords = async () => {
                     if (selectedCategoryFiles.length === 0) {
@@ -538,11 +534,13 @@
 
                     try {
                         const timestamp = Date.now();
-                        const promises = selectedCategoryFiles.map(file => 
-                            fetch(`${file}?t=${timestamp}`)
+                        const promises = selectedCategoryFiles.map(file => {
+                            // Garandeer dat elk bestand netjes via ./ wordt opgevraagd
+                            const path = file.startsWith('./') ? file : `./${file}`;
+                            return fetch(`${path}?t=${timestamp}`)
                                 .then(res => res.ok ? res.json() : [])
-                                .catch(() => [])
-                        );
+                                .catch(() => []);
+                        });
 
                         const results = await Promise.all(promises);
                         const combinedWords = results.flat();
@@ -594,7 +592,7 @@
             const playEndSound = () => {
                 playSynthSound.endBuzzer();
                 try {
-                    const audio = new Audio('end.mp3');
+                    const audio = new Audio('./end.mp3');
                     audio.play().catch(err => console.log("Audio MP3 afspelen mislukt:", err));
                 } catch(e) {}
             };
@@ -753,9 +751,9 @@
                             <div class="flex flex-col items-center justify-center">
                                 <div class="relative w-64 h-64 mb-4 flex items-center justify-center">
                                     <img 
-                                        src="logo.png" 
+                                        src="./logo.png" 
                                         alt="HEAO-30 Logo" 
-                                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'logo.svg'; }} 
+                                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = './logo.svg'; }} 
                                         class="w-full h-full object-contain drop-shadow-2xl rounded-2xl"
                                     />
                                 </div>
